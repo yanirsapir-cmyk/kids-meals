@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ארוחות הילדים</title>
+</head>
+<body>
+
+<h1>ארוחות הילדים</h1>
+
+<section>
+  <h2>רישום ארוחה</h2>
+
+  <label>
+    תאריך:
+    <input type="date" id="dateInput">
+  </label>
+  <br><br>
+
+  <label>
+    סוג ארוחה:
+    <select id="mealType">
+      <option value="בוקר">בוקר</option>
+      <option value="צהריים">צהריים</option>
+      <option value="ערב">ערב</option>
+      <option value="ביניים">ביניים</option>
+    </select>
+  </label>
+  <br><br>
+
+  <label>
+    מנה:
+    <input type="text" id="mealName" placeholder="לדוגמה: פסטה">
+  </label>
+  <br><br>
+
+  <strong>מי אכל?</strong><br>
+  <label><input type="checkbox" id="mika"> מיקה</label><br>
+  <label><input type="checkbox" id="omer"> עומר</label><br><br>
+
+  <button onclick="saveMeal()">שמירה</button>
+</section>
+
+<hr>
+
+<section>
+  <h2>מה אכלו היום</h2>
+  <ul id="mealList"></ul>
+</section>
+
+<script>
+  let meals = JSON.parse(localStorage.getItem("meals")) || [];
+
+  function saveMeal() {
+    const date = document.getElementById("dateInput").value;
+    const type = document.getElementById("mealType").value;
+    const name = document.getElementById("mealName").value;
+    const kids = [];
+
+    if (document.getElementById("mika").checked) kids.push("מיקה");
+    if (document.getElementById("omer").checked) kids.push("עומר");
+
+    if (!date || !name || kids.length === 0) {
+      alert("נא למלא תאריך, מנה ולבחור לפחות ילד אחד");
+      return;
+    }
+
+    meals.push({ date, type, name, kids });
+    localStorage.setItem("meals", JSON.stringify(meals));
+    renderMeals();
+  }
+
+  function renderMeals() {
+    const list = document.getElementById("mealList");
+    list.innerHTML = "";
+    meals.forEach(m => {
+      const li = document.createElement("li");
+      li.textContent = `${m.date} | ${m.type} | ${m.name} | ${m.kids.join(", ")}`;
+      list.appendChild(li);
+    });
+  }
+
+  renderMeals();
+</script>
+
+</body>
+</html>
