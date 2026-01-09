@@ -31,7 +31,14 @@
 
   <label>
     מנה:
-    <input type="text" id="mealName" placeholder="לדוגמה: פסטה">
+    <select id="mealSelect"></select>
+  </label>
+  <br><br>
+
+  <label>
+    הוסף מנה חדשה:
+    <input type="text" id="newMealInput" placeholder="לדוגמה: פסטה">
+    <button onclick="addMeal()">הוסף</button>
   </label>
   <br><br>
 
@@ -51,23 +58,53 @@
 
 <script>
   let meals = JSON.parse(localStorage.getItem("meals")) || [];
+  let mealOptions = JSON.parse(localStorage.getItem("mealOptions")) || [];
+
+  function saveData() {
+    localStorage.setItem("meals", JSON.stringify(meals));
+    localStorage.setItem("mealOptions", JSON.stringify(mealOptions));
+  }
+
+  function addMeal() {
+    const input = document.getElementById("newMealInput");
+    const value = input.value.trim();
+    if (!value) return;
+
+    if (!mealOptions.includes(value)) {
+      mealOptions.push(value);
+      saveData();
+      renderMealOptions();
+    }
+    input.value = "";
+  }
+
+  function renderMealOptions() {
+    const select = document.getElementById("mealSelect");
+    select.innerHTML = "";
+    mealOptions.forEach(m => {
+      const opt = document.createElement("option");
+      opt.value = m;
+      opt.textContent = m;
+      select.appendChild(opt);
+    });
+  }
 
   function saveMeal() {
     const date = document.getElementById("dateInput").value;
     const type = document.getElementById("mealType").value;
-    const name = document.getElementById("mealName").value;
+    const meal = document.getElementById("mealSelect").value;
     const kids = [];
 
     if (document.getElementById("mika").checked) kids.push("מיקה");
     if (document.getElementById("omer").checked) kids.push("עומר");
 
-    if (!date || !name || kids.length === 0) {
-      alert("נא למלא תאריך, מנה ולבחור לפחות ילד אחד");
+    if (!date || !meal || kids.length === 0) {
+      alert("נא למלא תאריך, לבחור מנה ולבחור לפחות ילד אחד");
       return;
     }
 
-    meals.push({ date, type, name, kids });
-    localStorage.setItem("meals", JSON.stringify(meals));
+    meals.push({ date, type, meal, kids });
+    saveData();
     renderMeals();
   }
 
@@ -76,11 +113,12 @@
     list.innerHTML = "";
     meals.forEach(m => {
       const li = document.createElement("li");
-      li.textContent = `${m.date} | ${m.type} | ${m.name} | ${m.kids.join(", ")}`;
+      li.textContent = `${m.date} | ${m.type} | ${m.meal} | ${m.kids.join(", ")}`;
       list.appendChild(li);
     });
   }
 
+  renderMealOptions();
   renderMeals();
 </script>
 
