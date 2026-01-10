@@ -4,103 +4,247 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ארוחות הילדים</title>
+
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --primary: #2563eb;
+      --danger: #dc2626;
+      --shadow: 0 6px 18px rgba(0,0,0,0.06);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 14px;
+      line-height: 1.35;
+    }
+
+    h1 {
+      margin: 6px 0 12px;
+      font-size: 22px;
+      font-weight: 800;
+    }
+    h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+    h3 {
+      margin: 14px 0 8px;
+      font-size: 15px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      margin: 12px 0;
+    }
+
+    label { display: block; margin: 8px 0; font-weight: 600; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .row > * { flex: 1; min-width: 170px; }
+
+    input[type="text"], input[type="date"], select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+      font-size: 16px;
+    }
+
+    .inline {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-weight: 800;
+      font-size: 15px;
+      cursor: pointer;
+      transition: transform 0.03s ease, opacity 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-ghost { background: #eef2ff; color: #1e40af; }
+    .btn-muted { background: #f3f4f6; color: #111827; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #fff;
+      font-weight: 700;
+    }
+
+    .note { color: var(--muted); font-size: 13px; margin-top: 6px; }
+
+    ul { margin: 10px 0 0; padding: 0; list-style: none; }
+    li {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 10px 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+      margin-bottom: 8px;
+    }
+    li span { flex: 1; }
+    li button { flex: 0 0 auto; }
+
+    .divider { height: 1px; background: var(--border); margin: 12px 0; }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-weight: 800;
+    }
+
+    @media (min-width: 700px) {
+      body { max-width: 820px; margin: 0 auto; padding: 18px; }
+      h1 { font-size: 26px; }
+      .card { padding: 16px; }
+    }
+  </style>
 </head>
 <body>
 
 <h1>ארוחות הילדים</h1>
 
-<button type="button" onclick="resetData()">איפוס נתונים</button>
-<br><br>
+<div class="top-actions">
+  <button class="btn btn-danger" type="button" onclick="resetData()">איפוס נתונים</button>
+</div>
 
-<section>
+<section class="card">
   <h2>ניהול ילדים</h2>
 
-  <label>
-    הוסף ילד/ה:
-    <input type="text" id="newKidInput" placeholder="לדוגמה: מיקה">
-    <button type="button" onclick="addKid()">הוסף</button>
-  </label>
+  <div class="row">
+    <div>
+      <label>הוסף ילד/ה</label>
+      <div class="inline">
+        <input type="text" id="newKidInput" placeholder="לדוגמה: מיקה">
+        <button class="btn btn-primary" type="button" onclick="addKid()">הוסף</button>
+      </div>
+      <div class="note">אפשר להוסיף/להסיר ילדים בלי לגעת בקוד.</div>
+    </div>
+  </div>
 
   <ul id="kidsList"></ul>
 </section>
 
-<hr>
-
-<section>
+<section class="card">
   <h2>רישום ארוחה</h2>
 
-  <label>
-    תאריך:
-    <input type="date" id="dateInput">
-  </label>
-  <br><br>
+  <div class="row">
+    <div>
+      <label>תאריך</label>
+      <input type="date" id="dateInput">
+    </div>
 
-  <label>
-    סוג ארוחה:
-    <select id="mealType">
-      <option value="בוקר">בוקר</option>
-      <option value="צהריים">צהריים</option>
-      <option value="ערב" selected>ערב</option>
-      <option value="ביניים">ביניים</option>
-    </select>
-  </label>
-  <br><br>
+    <div>
+      <label>סוג ארוחה</label>
+      <select id="mealType">
+        <option value="בוקר">בוקר</option>
+        <option value="צהריים">צהריים</option>
+        <option value="ערב" selected>ערב</option>
+        <option value="ביניים">ביניים</option>
+      </select>
+    </div>
+  </div>
 
-  <label>
-    מנה (במצב "אותה ארוחה לכולם"):
+  <div class="divider"></div>
+
+  <label>מנה (במצב "אותה ארוחה לכולם")</label>
+  <div class="inline">
     <select id="mealSelect"></select>
-  </label>
-  <button type="button" onclick="suggestMeal()">תן לי רעיון</button>
-  <br><br>
+    <button class="btn btn-ghost" type="button" onclick="suggestMeal()">תן לי רעיון</button>
+  </div>
 
-  <label>
-    הוסף מנה חדשה למאגר:
+  <label style="margin-top:12px;">הוסף מנה חדשה למאגר</label>
+  <div class="inline">
     <input type="text" id="newMealInput" placeholder="לדוגמה: פסטה">
-    <button type="button" onclick="addMeal()">הוסף</button>
-  </label>
-  <br><br>
+    <button class="btn btn-primary" type="button" onclick="addMeal()">הוסף</button>
+  </div>
 
-  <strong>מי אכל?</strong><br>
+  <div class="divider"></div>
 
-  <label>
+  <div class="toggle">
     <input type="checkbox" id="sameForAll" checked onchange="toggleMode()">
-    ברירת מחדל: אותה ארוחה לכולם
-  </label>
-  <br><br>
+    <span>ברירת מחדל: אותה ארוחה לכולם</span>
+  </div>
 
-  <div id="sameMode"></div>
+  <div id="sameMode" style="margin-top:10px;"></div>
 
-  <div id="splitMode" style="display:none;">
+  <div id="splitMode" style="display:none; margin-top:10px;">
     <div id="splitKidsContainer"></div>
   </div>
 
-  <br>
-  <button type="button" onclick="saveMeal()">שמירה</button>
+  <div style="margin-top:14px;">
+    <button class="btn btn-primary" type="button" onclick="saveMeal()">שמירה</button>
+  </div>
 </section>
 
-<hr>
-
-<section>
+<section class="card">
   <h2>היסטוריה</h2>
   <ul id="mealList"></ul>
 </section>
 
-<hr>
-
-<section>
+<section class="card">
   <h2>שבוע אחרון + גיוון</h2>
 
-  <label>
-    שבוע שמסתיים בתאריך:
-    <input type="date" id="weekEndDate">
-  </label>
-  <button type="button" onclick="shiftWeek(-7)">שבוע קודם</button>
-  <button type="button" onclick="shiftWeek(7)">שבוע הבא</button>
+  <div class="row">
+    <div>
+      <label>שבוע שמסתיים בתאריך</label>
+      <input type="date" id="weekEndDate">
+    </div>
+
+    <div class="inline" style="justify-content:flex-start; margin-top: 26px;">
+      <button class="btn btn-muted" type="button" onclick="shiftWeek(-7)">שבוע קודם</button>
+      <button class="btn btn-muted" type="button" onclick="shiftWeek(7)">שבוע הבא</button>
+    </div>
+  </div>
 
   <h3>רישומים בשבוע</h3>
   <ul id="weekList"></ul>
 
-  <h3>סיכום גיוון (כמה פעמים כל מנה הופיעה)</h3>
+  <h3>סיכום גיוון</h3>
   <ul id="varietyList"></ul>
 </section>
 
@@ -180,9 +324,9 @@
   }
 
   // ===== Kids management =====
-  function normalizeName(s) {
-    return (s || "").trim();
-  }
+  function normalizeName(s) { return (s || "").trim(); }
+
+  function escapeQuotes(s) { return String(s).replace(/'/g, "\\'"); }
 
   function addKid() {
     const input = document.getElementById("newKidInput");
@@ -199,6 +343,7 @@
     saveData();
     renderKidsUI();
     renderModes();
+    toggleMode();
     renderMealOptions();
   }
 
@@ -207,7 +352,6 @@
 
     kids = kids.filter(k => k !== name);
 
-    // גם לנקות דיווחי split שכוללים את הילד הזה
     meals = meals.map(m => {
       if (!m.split) {
         return { ...m, kids: (m.kids || []).filter(k => k !== name) };
@@ -216,8 +360,8 @@
       delete km[name];
       return { ...m, kidMeals: km };
     }).filter(m => {
-      if (!m.split) return (m.kids || []).length > 0; // אם לא נשאר אף ילד בדיווח רגיל -> להסיר
-      return Object.keys(m.kidMeals || {}).length > 0; // אם לא נשאר אף ילד בדיווח split -> להסיר
+      if (!m.split) return (m.kids || []).length > 0;
+      return Object.keys(m.kidMeals || {}).length > 0;
     });
 
     saveData();
@@ -239,14 +383,10 @@
       const li = document.createElement("li");
       li.innerHTML = `
         <span>${k}</span>
-        <button type="button" onclick="removeKid('${escapeQuotes(k)}')">מחק</button>
+        <button class="btn btn-danger" type="button" onclick="removeKid('${escapeQuotes(k)}')">מחק</button>
       `;
       ul.appendChild(li);
     });
-  }
-
-  function escapeQuotes(s) {
-    return String(s).replace(/'/g, "\\'");
   }
 
   // ===== UI helpers =====
@@ -257,46 +397,50 @@
   }
 
   function renderModes() {
-    // same mode: checkboxes for kids
     const same = document.getElementById("sameMode");
     same.innerHTML = "";
 
     if (kids.length === 0) {
-      same.innerHTML = `<p>אין ילדים ברשימה. הוסף ילד/ה כדי לשמור דיווח.</p>`;
+      same.innerHTML = `<p class="note">אין ילדים ברשימה. הוסף ילד/ה כדי לשמור דיווח.</p>`;
     } else {
       kids.forEach(k => {
         const id = `kid_cb_${k}`;
         const row = document.createElement("div");
-        row.innerHTML = `<label><input type="checkbox" id="${id}" checked> ${k}</label>`;
+        row.className = "pill";
+        row.style.margin = "6px 0";
+        row.innerHTML = `<label style="margin:0; font-weight:800;"><input type="checkbox" id="${id}" checked> ${k}</label>`;
         same.appendChild(row);
       });
     }
 
-    // split mode: per kid meal select + suggestion
     const split = document.getElementById("splitKidsContainer");
     split.innerHTML = "";
 
     if (kids.length === 0) {
-      split.innerHTML = `<p>אין ילדים ברשימה. הוסף ילד/ה כדי לשמור דיווח.</p>`;
+      split.innerHTML = `<p class="note">אין ילדים ברשימה. הוסף ילד/ה כדי לשמור דיווח.</p>`;
       return;
     }
 
     kids.forEach(k => {
       const selId = `mealSel_${k}`;
       const block = document.createElement("div");
-      block.style.marginBottom = "16px";
+      block.className = "pill";
+      block.style.display = "block";
+      block.style.borderRadius = "14px";
+      block.style.margin = "8px 0";
+      block.style.padding = "12px";
       block.innerHTML = `
-        <label>${k} אכל/ה:
+        <div style="font-weight:900; margin-bottom:8px;">${k}</div>
+        <div class="inline">
           <select id="${selId}"></select>
-        </label>
-        <button type="button" onclick="suggestMeal('${escapeQuotes(k)}')">תן רעיון ל-${k}</button>
+          <button class="btn btn-ghost" type="button" onclick="suggestMeal('${escapeQuotes(k)}')">תן רעיון</button>
+        </div>
       `;
       split.appendChild(block);
     });
   }
 
   function renderMealOptions() {
-    // main select
     const main = document.getElementById("mealSelect");
     main.innerHTML = "";
     mealOptions.forEach(m => {
@@ -306,7 +450,6 @@
       main.appendChild(opt);
     });
 
-    // split selects
     kids.forEach(k => {
       const sel = document.getElementById(`mealSel_${k}`);
       if (!sel) return;
@@ -318,6 +461,12 @@
         sel.appendChild(opt);
       });
     });
+  }
+
+  function formatKidMeals(kidMeals) {
+    const entries = Object.entries(kidMeals || {});
+    if (entries.length === 0) return "—";
+    return entries.map(([k, meal]) => `${k}: ${meal}`).join(" | ");
   }
 
   function renderMeals() {
@@ -333,17 +482,11 @@
 
       li.innerHTML = `
         <span>${text}</span>
-        <button type="button" onclick="deleteMeal('${m.id}')">מחק</button>
+        <button class="btn btn-danger" type="button" onclick="deleteMeal('${m.id}')">מחק</button>
       `;
 
       list.appendChild(li);
     });
-  }
-
-  function formatKidMeals(kidMeals) {
-    const entries = Object.entries(kidMeals || {});
-    if (entries.length === 0) return "—";
-    return entries.map(([k, meal]) => `${k}: ${meal}`).join(" | ");
   }
 
   // ===== Meal options =====
@@ -365,18 +508,9 @@
     const date = document.getElementById("dateInput").value;
     const type = document.getElementById("mealType").value;
 
-    if (!date) {
-      alert("נא למלא תאריך");
-      return;
-    }
-    if (kids.length === 0) {
-      alert("אין ילדים ברשימה. הוסף ילד/ה קודם.");
-      return;
-    }
-    if (mealOptions.length === 0) {
-      alert("מאגר המנות ריק. הוסף מנה קודם.");
-      return;
-    }
+    if (!date) { alert("נא למלא תאריך"); return; }
+    if (kids.length === 0) { alert("אין ילדים ברשימה. הוסף ילד/ה קודם."); return; }
+    if (mealOptions.length === 0) { alert("מאגר המנות ריק. הוסף מנה קודם."); return; }
 
     const sameForAll = document.getElementById("sameForAll").checked;
 
@@ -400,15 +534,11 @@
       return;
     }
 
-    // split mode
     const kidMeals = {};
     for (const k of kids) {
       const sel = document.getElementById(`mealSel_${k}`);
       const chosen = sel ? sel.value : "";
-      if (!chosen) {
-        alert(`נא לבחור מנה עבור ${k}`);
-        return;
-      }
+      if (!chosen) { alert(`נא לבחור מנה עבור ${k}`); return; }
       kidMeals[k] = chosen;
     }
 
@@ -452,13 +582,12 @@
 
         li.innerHTML = `
           <span>${text}</span>
-          <button type="button" onclick="deleteMeal('${m.id}')">מחק</button>
+          <button class="btn btn-danger" type="button" onclick="deleteMeal('${m.id}')">מחק</button>
         `;
         weekList.appendChild(li);
       });
     }
 
-    // variety count (count per kid in split, once in non-split)
     const counts = new Map();
     weekMeals.forEach(m => {
       if (m.split) {
@@ -490,15 +619,11 @@
 
   // ===== Suggestion =====
   function suggestMeal(targetKid) {
-    if (mealOptions.length === 0) {
-      alert("מאגר המנות ריק. הוסף מנה קודם.");
-      return;
-    }
+    if (mealOptions.length === 0) { alert("מאגר המנות ריק. הוסף מנה קודם."); return; }
 
     const weekMeals = getWeekMeals();
-
-    // count appearances in selected week
     const counts = new Map();
+
     weekMeals.forEach(m => {
       if (m.split) {
         Object.values(m.kidMeals || {}).forEach(meal => {
@@ -509,7 +634,6 @@
       }
     });
 
-    // min count -> candidates
     let min = Infinity;
     mealOptions.forEach(opt => {
       const c = counts.get(opt) || 0;
@@ -521,14 +645,12 @@
 
     const sameForAll = document.getElementById("sameForAll").checked;
 
-    // If specific kid requested, set that kid select
     if (targetKid) {
       const sel = document.getElementById(`mealSel_${targetKid}`);
       if (sel) sel.value = pick;
       return;
     }
 
-    // Top button: if same mode -> set main select. if split -> set all kids
     if (sameForAll) {
       document.getElementById("mealSelect").value = pick;
       return;
