@@ -77,6 +77,25 @@
   <ul id="mealList"></ul>
 </section>
 
+<hr>
+
+<section>
+  <h2>שבוע אחרון + גיוון</h2>
+
+  <label>
+    שבוע שמסתיים בתאריך:
+    <input type="date" id="weekEndDate">
+  </label>
+  <button type="button" onclick="shiftWeek(-7)">שבוע קודם</button>
+  <button type="button" onclick="shiftWeek(7)">שבוע הבא</button>
+
+  <h3>רישומים בשבוע</h3>
+  <ul id="weekList"></ul>
+
+  <h3>סיכום גיוון (כמה פעמים כל מנה הופיעה)</h3>
+  <ul id="varietyList"></ul>
+</section>
+
 <script>
   // ===== Data =====
   let meals = JSON.parse(localStorage.getItem("meals")) || [];
@@ -87,7 +106,7 @@
     localStorage.setItem("mealOptions", JSON.stringify(mealOptions));
   }
 
-  // ===== UI helpers =====
+  // ===== Date helpers =====
   function todayISO() {
     const d = new Date();
     const yyyy = d.getFullYear();
@@ -96,6 +115,25 @@
     return `${yyyy}-${mm}-${dd}`;
   }
 
+  function parseISO(dateISO) {
+    return new Date(dateISO + "T00:00:00");
+  }
+
+  function addDays(dateISO, delta) {
+    const d = parseISO(dateISO);
+    d.setDate(d.getDate() + delta);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function isInRange(dateISO, startISO, endISO) {
+    const t = parseISO(dateISO).getTime();
+    return t >= parseISO(startISO).getTime() && t <= parseISO(endISO).getTime();
+  }
+
+  // ===== UI helpers =====
   function toggleMode() {
     const same = document.getElementById("sameForBoth").checked;
     document.getElementById("sameMode").style.display = same ? "block" : "none";
@@ -178,6 +216,7 @@
       meals.push({ date, type, meal, kids });
       saveData();
       renderMeals();
+      renderWeek();
       return;
     }
 
@@ -193,13 +232,82 @@
     meals.push({ date, type, split: true, mikaMeal: mealMika, omerMeal: mealOmer });
     saveData();
     renderMeals();
+    renderWeek();
+  }
+
+  // ===== Week view =====
+  function shiftWeek(deltaDays) {
+    const end = document.getElementById("weekEndDate");
+    end.value = addDays(end.value, deltaDays);
+    renderWeek();
+  }
+
+  function renderWeek() {
+    const endISO = document.getElementById("weekEndDate").value;
+    const startISO = addDays(endISO, -6);
+
+    // logs in week
+    const weekMeals = meals.filter(m => isInRange(m.date, startISO, endISO));
+
+    // render week list
+    const weekList = document.getElementById("weekList");
+    weekList.innerHTML = "";
+
+    if (weekMeals.length === 0) {
+      const li = document.createElement("li");
+      li.textContent = "אין רישומים בשבוע הזה";
+      weekList.appendChild(li);
+    } else {
+      // sort by date
+      weekMeals.sort((a,b) => a.date.localeCompare(b.date));
+      weekMeals.forEach(m => {
+        const li = document.createElement("li");
+        if (m.split) {
+          li.textContent = `${m.date} | ${m.type} | מיקה: ${m.mikaMeal} | עומר: ${m.omerMeal}`;
+        } else {
+          li.textContent = `${m.date} | ${m.type} | ${m.meal} | ${m.kids.join(", ")}`;
+        }
+        weekList.appendChild(li);
+      });
+    }
+
+    // variety count
+    const counts = new Map(); // meal -> count
+    weekMeals.forEach(m => {
+      if (m.split) {
+        counts.set(m.mikaMeal, (counts.get(m.mikaMeal) || 0) + 1);
+        counts.set(m.omerMeal, (counts.get(m.omerMeal) || 0) + 1);
+      } else {
+        counts.set(m.meal, (counts.get(m.meal) || 0) + 1);
+      }
+    });
+
+    const varietyList = document.getElementById("varietyList");
+    varietyList.innerHTML = "";
+
+    const entries = [...counts.entries()].sort((a,b) => b[1] - a[1] || a[0].localeCompare(b[0], "he"));
+
+    if (entries.length === 0) {
+      const li = document.createElement("li");
+      li.textContent = "אין נתונים לגיוון בשבוע הזה";
+      varietyList.appendChild(li);
+    } else {
+      entries.forEach(([meal, c]) => {
+        const li = document.createElement("li");
+        li.textContent = `${meal} — ${c} פעמים`;
+        varietyList.appendChild(li);
+      });
+    }
   }
 
   // ===== Init =====
   document.getElementById("dateInput").value = todayISO();
+  document.getElementById("weekEndDate").value = todayISO();
+
   toggleMode();
   renderMealOptions();
   renderMeals();
+  renderWeek();
 </script>
 
 </body>
