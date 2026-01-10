@@ -479,14 +479,8 @@
    ========================= */
 const SYNC_URL = "https://script.google.com/macros/s/AKfycby8gDkzATtKwGFqFguvvTcqZ0jC1FCADAFWw1PLoOzVAmV1UwuZiIPkC1YNhmD_4pi4/exec";
 const SYNC_TOKEN = "CHANGE_ME_12345";
+const DEVICE_NAME = "Yanir"; // במכשיר של אשתך תשנה ל-"Wife"
 
-/** חשוב: במכשיר שלך תשאיר "Yanir". אצל אשתך תשני ל-"Wife" (או כל שם). */
-const DEVICE_NAME = "Yanir";
-
-/** כלל הניצחון: Yanir תמיד גובר.
- *  - במכשיר Yanir: לא דורסים לוקאל מהענן.
- *  - במכשיר Wife: תמיד טוענים מהענן בהפעלה (כדי להתיישר ל-Yanir).
- */
 function localHasAnyData(){
   try{
     const kids = JSON.parse(localStorage.getItem("kids") || "[]");
@@ -536,7 +530,7 @@ function syncSave(){
 
 async function syncLoad(){
   try{
-    // Yanir לא נדרס.
+    // Yanir תמיד מנצח: לא נדרוס לו לוקאל אם יש לו דאטא
     if(DEVICE_NAME === "Yanir" && localHasAnyData()) return;
 
     const res = await fetch(`${SYNC_URL}?token=${encodeURIComponent(SYNC_TOKEN)}`);
@@ -556,14 +550,8 @@ async function syncLoad(){
 }
 
 /* =========================
-   App data model
-   =========================
-   kids: ["מיקה","עומר",...]
-   dishes: [{dish, createdAt, recipeText, recipeUrl, types:["בוקר","צהריים"...]}]
-   logs:
-     - same: {id, createdAt, date, type, same:true, meal, kids:[...]}
-     - split:{id, createdAt, date, type, same:false, kidMeals:{name: dish}}
-*/
+   App data
+   ========================= */
 const KIDS_KEY = "kids";
 const DISHES_KEY = "dishes";
 const LOGS_KEY = "logs";
@@ -653,10 +641,7 @@ function dishAllowedForType(dishName, mealType){
   return types.includes(mealType);
 }
 function getDishesForType(mealType){
-  const arr = dishes
-    .map(d => d.dish)
-    .filter(name => dishAllowedForType(name, mealType));
-  // אם אין שום מנה מסוננת, נחזיר הכול כדי שלא "ייעלם"
+  const arr = dishes.map(d => d.dish).filter(name => dishAllowedForType(name, mealType));
   return arr.length ? arr : dishes.map(d => d.dish);
 }
 
@@ -712,7 +697,6 @@ function toggleMode(){
 }
 
 function renderLogSelectors(){
-  // dropdown של מנות (לפי סוג הארוחה)
   const type = document.getElementById("mealType").value;
   const available = getDishesForType(type);
 
@@ -726,23 +710,21 @@ function renderLogSelectors(){
   });
   if(current && available.includes(current)) sel.value = current;
 
-  // checkboxes של ילדים (same mode)
   const sameKids = document.getElementById("sameKids");
   sameKids.innerHTML = "";
   kids.forEach(k => {
     const row = document.createElement("div");
     row.className = "checkrow";
-    row.innerHTML = `<input type="checkbox" id="cb_${cssSafe(k)}" checked><div style="font-weight:900;">${k}</div>`;
+    row.innerHTML = `<input type="checkbox" id="cb_${cssSafe(k)}" checked><div style="font-weight:900;">${escapeHtml(k)}</div>`;
     sameKids.appendChild(row);
   });
 
-  // split mode rows
   const splitKids = document.getElementById("splitKids");
   splitKids.innerHTML = "";
   kids.forEach(k => {
     const row = document.createElement("div");
     row.className = "checkrow";
-    row.innerHTML = `<div style="font-weight:900; min-width:90px;">${k}</div><select id="sel_${cssSafe(k)}"></select>`;
+    row.innerHTML = `<div style="font-weight:900; min-width:90px;">${escapeHtml(k)}</div><select id="sel_${cssSafe(k)}"></select>`;
     const s = row.querySelector("select");
     available.forEach(name => {
       const o = document.createElement("option");
@@ -752,7 +734,6 @@ function renderLogSelectors(){
     splitKids.appendChild(row);
   });
 
-  // filters rebuild
   renderKidFilters();
 }
 
@@ -772,7 +753,6 @@ function removeKid(name){
   if(!confirm(`למחוק את "${name}"?`)) return;
   kids = kids.filter(k => k !== name);
 
-  // להסיר מהיסטוריה
   logs = logs.map(r => {
     if(r.same){
       return {...r, kids: (r.kids||[]).filter(k => k !== name)};
@@ -802,7 +782,7 @@ function addDish(){
     createdAt: Date.now(),
     recipeText: "",
     recipeUrl: "",
-    types: [...TYPES] // ברירת מחדל לכל הסוגים
+    types: [...TYPES]
   });
   document.getElementById("newDishInput").value = "";
   saveAll();
@@ -817,7 +797,6 @@ function editDishName(oldName){
 
   dishes = dishes.map(d => d.dish === oldName ? {...d, dish: next} : d);
 
-  // עדכון היסטוריה
   logs = logs.map(r => {
     if(r.same){
       return r.meal === oldName ? {...r, meal: next} : r;
@@ -930,7 +909,7 @@ function recordKidsList(r){
   return Object.keys(r.kidMeals||{});
 }
 function recordMatchesKids(r, activeKids){
-  if(!activeKids.length) return true; // אם לא מסמנים כלום — הכול
+  if(!activeKids.length) return true;
   const rk = recordKidsList(r);
   return rk.some(k => activeKids.includes(k));
 }
@@ -1059,7 +1038,6 @@ function renderData(){
 
   renderGrouped(document.getElementById("historyWrap"), all);
 
-  // Week view
   const end = document.getElementById("weekEndDate").value || document.getElementById("dateInput").value;
   if(!end){
     document.getElementById("weekWrap").innerHTML = "";
@@ -1076,7 +1054,6 @@ function renderData(){
 
   renderGrouped(document.getElementById("weekWrap"), week);
 
-  // Variety
   const counts = new Map();
   week.forEach(r => {
     if(r.same){
@@ -1120,6 +1097,7 @@ function clearHistoryOnly(){
   renderAll();
 }
 function resetAll(){
+  if(!confirm("_toggle")){} // placeholder to keep structure identical
   if(!confirm("איפוס מלא?")) return;
   localStorage.clear();
   location.reload();
@@ -1222,7 +1200,6 @@ function openRecipeModal(dishName){
   document.getElementById("recipeUrlInput").value = d.recipeUrl || "";
   document.getElementById("pasteWarn").style.display = "none";
 
-  // types checkboxes
   const host = document.getElementById("recipeTypeChecks");
   host.innerHTML = "";
   TYPES.forEach(t => {
@@ -1242,7 +1219,6 @@ function hideRecipeModal(){
 function closeRecipeModal(e){
   if(e.target === document.getElementById("recipeBackdrop")) hideRecipeModal();
 }
-
 async function pasteRecipe(){
   document.getElementById("pasteWarn").style.display = "none";
   try{
@@ -1265,13 +1241,11 @@ function openRecipeLink(){
   try{ window.open(new URL(url).toString(), "_blank"); }
   catch{ alert("הקישור לא תקין"); }
 }
-
 function saveRecipe(){
   if(!recipeDishName) return;
   const text = document.getElementById("recipeTextInput").value || "";
   const url = (document.getElementById("recipeUrlInput").value || "").trim();
 
-  // collect types
   const selected = TYPES.filter(t => document.getElementById("rt_"+t)?.checked);
   const types = selected.length ? selected : [...TYPES];
 
@@ -1306,7 +1280,6 @@ function openEditModal(id){
   document.getElementById("editType").value = r.type || "ערב";
   document.getElementById("editSame").checked = !!r.same;
 
-  // build UI
   buildEditKidsUI();
   fillSelectWithDishes(document.getElementById("editMealSelect"), document.getElementById("editType").value);
 
@@ -1376,7 +1349,6 @@ function toggleEditMode(){
 }
 
 document.getElementById("editType").addEventListener("change", ()=>{
-  // עדכון רשימות מנות לפי סוג חדש
   fillSelectWithDishes(document.getElementById("editMealSelect"), document.getElementById("editType").value);
   kids.forEach(k => {
     const sel = document.getElementById("edit_sel_"+cssSafe(k));
@@ -1445,7 +1417,6 @@ function escapeHtml(s){
   }[m]));
 }
 function cssSafe(s){
-  // ל-IDs (פשוט)
   return String(s).replace(/[^a-zA-Z0-9_\u0590-\u05FF]/g, "_");
 }
 
@@ -1461,14 +1432,13 @@ function renderAll(){
 }
 
 /* =========================
-   Init
+   Init (מתוקן: לא דריסה!)
    ========================= */
 document.getElementById("dateInput").value = todayISO();
 document.getElementById("weekEndDate").value = todayISO();
 
-saveAll();
 renderAll();
-syncLoad();
+syncLoad(); // מושך מהענן רק אם לא Yanir עם דאטא
 </script>
 </body>
 </html>
