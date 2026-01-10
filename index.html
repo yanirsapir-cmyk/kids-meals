@@ -9,6 +9,9 @@
 
 <h1>ארוחות הילדים</h1>
 
+<button type="button" onclick="resetData()">איפוס נתונים</button>
+<br><br>
+
 <section>
   <h2>רישום ארוחה</h2>
 
@@ -116,6 +119,23 @@
     saveData();
     renderMeals();
     renderWeek();
+  }
+
+  function resetData() {
+    const ok = confirm("זה ימחק את כל הדיווחים וכל מאגר המנות. להמשיך?");
+    if (!ok) return;
+
+    localStorage.removeItem("meals");
+    localStorage.removeItem("mealOptions");
+
+    meals = [];
+    mealOptions = [];
+
+    renderMealOptions();
+    renderMeals();
+    renderWeek();
+
+    alert("בוצע איפוס נתונים");
   }
 
   // ===== Date helpers =====
