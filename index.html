@@ -106,6 +106,18 @@
     localStorage.setItem("mealOptions", JSON.stringify(mealOptions));
   }
 
+  function makeId() {
+    return "m_" + Math.random().toString(16).slice(2) + "_" + Date.now();
+  }
+
+  function deleteMeal(id) {
+    if (!confirm("למחוק את הדיווח?")) return;
+    meals = meals.filter(m => m.id !== id);
+    saveData();
+    renderMeals();
+    renderWeek();
+  }
+
   // ===== Date helpers =====
   function todayISO() {
     const d = new Date();
@@ -167,11 +179,16 @@
 
     meals.forEach(m => {
       const li = document.createElement("li");
-      if (m.split) {
-        li.textContent = `${m.date} | ${m.type} | מיקה: ${m.mikaMeal} | עומר: ${m.omerMeal}`;
-      } else {
-        li.textContent = `${m.date} | ${m.type} | ${m.meal} | ${m.kids.join(", ")}`;
-      }
+
+      const text = m.split
+        ? `${m.date} | ${m.type} | מיקה: ${m.mikaMeal} | עומר: ${m.omerMeal}`
+        : `${m.date} | ${m.type} | ${m.meal} | ${m.kids.join(", ")}`;
+
+      li.innerHTML = `
+        <span>${text}</span>
+        <button type="button" onclick="deleteMeal('${m.id}')">מחק</button>
+      `;
+
       list.appendChild(li);
     });
   }
@@ -213,7 +230,7 @@
         return;
       }
 
-      meals.push({ date, type, meal, kids });
+      meals.push({ id: makeId(), date, type, meal, kids });
       saveData();
       renderMeals();
       renderWeek();
@@ -229,7 +246,7 @@
       return;
     }
 
-    meals.push({ date, type, split: true, mikaMeal: mealMika, omerMeal: mealOmer });
+    meals.push({ id: makeId(), date, type, split: true, mikaMeal: mealMika, omerMeal: mealOmer });
     saveData();
     renderMeals();
     renderWeek();
@@ -246,7 +263,6 @@
     const endISO = document.getElementById("weekEndDate").value;
     const startISO = addDays(endISO, -6);
 
-    // logs in week
     const weekMeals = meals.filter(m => isInRange(m.date, startISO, endISO));
 
     // render week list
@@ -258,21 +274,25 @@
       li.textContent = "אין רישומים בשבוע הזה";
       weekList.appendChild(li);
     } else {
-      // sort by date
       weekMeals.sort((a,b) => a.date.localeCompare(b.date));
       weekMeals.forEach(m => {
         const li = document.createElement("li");
-        if (m.split) {
-          li.textContent = `${m.date} | ${m.type} | מיקה: ${m.mikaMeal} | עומר: ${m.omerMeal}`;
-        } else {
-          li.textContent = `${m.date} | ${m.type} | ${m.meal} | ${m.kids.join(", ")}`;
-        }
+
+        const text = m.split
+          ? `${m.date} | ${m.type} | מיקה: ${m.mikaMeal} | עומר: ${m.omerMeal}`
+          : `${m.date} | ${m.type} | ${m.meal} | ${m.kids.join(", ")}`;
+
+        li.innerHTML = `
+          <span>${text}</span>
+          <button type="button" onclick="deleteMeal('${m.id}')">מחק</button>
+        `;
+
         weekList.appendChild(li);
       });
     }
 
     // variety count
-    const counts = new Map(); // meal -> count
+    const counts = new Map();
     weekMeals.forEach(m => {
       if (m.split) {
         counts.set(m.mikaMeal, (counts.get(m.mikaMeal) || 0) + 1);
