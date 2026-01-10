@@ -28,28 +28,11 @@
       line-height: 1.35;
     }
 
-    h1 {
-      margin: 6px 0 12px;
-      font-size: 22px;
-      font-weight: 800;
-    }
-    h2 {
-      margin: 0 0 10px;
-      font-size: 18px;
-    }
-    h3 {
-      margin: 14px 0 8px;
-      font-size: 15px;
-      color: var(--muted);
-      font-weight: 700;
-    }
+    h1 { margin: 6px 0 12px; font-size: 22px; font-weight: 800; }
+    h2 { margin: 0 0 10px; font-size: 18px; }
+    h3 { margin: 14px 0 8px; font-size: 15px; color: var(--muted); font-weight: 700; }
 
-    .top-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 14px;
-    }
+    .top-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
 
     .card {
       background: var(--card);
@@ -73,12 +56,7 @@
       font-size: 16px;
     }
 
-    .inline {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+    .inline { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
     .btn {
       border: none;
@@ -144,8 +122,8 @@
     }
   </style>
 </head>
-<body>
 
+<body>
 <h1>ארוחות הילדים</h1>
 
 <div class="top-actions">
@@ -167,6 +145,23 @@
   </div>
 
   <ul id="kidsList"></ul>
+</section>
+
+<section class="card">
+  <h2>ניהול מנות</h2>
+
+  <div class="row">
+    <div>
+      <label>הוסף מנה חדשה למאגר</label>
+      <div class="inline">
+        <input type="text" id="newMealInput" placeholder="לדוגמה: פסטה">
+        <button class="btn btn-primary" type="button" onclick="addMeal()">הוסף</button>
+      </div>
+      <div class="note">מחיקה כאן לא מוחקת היסטוריה (רק מסירה מהמאגר להמשך).</div>
+    </div>
+  </div>
+
+  <ul id="mealsOptionsList"></ul>
 </section>
 
 <section class="card">
@@ -195,12 +190,6 @@
   <div class="inline">
     <select id="mealSelect"></select>
     <button class="btn btn-ghost" type="button" onclick="suggestMeal()">תן לי רעיון</button>
-  </div>
-
-  <label style="margin-top:12px;">הוסף מנה חדשה למאגר</label>
-  <div class="inline">
-    <input type="text" id="newMealInput" placeholder="לדוגמה: פסטה">
-    <button class="btn btn-primary" type="button" onclick="addMeal()">הוסף</button>
   </div>
 
   <div class="divider"></div>
@@ -271,6 +260,97 @@
     return "m_" + Math.random().toString(16).slice(2) + "_" + Date.now();
   }
 
+  function escapeQuotes(s) { return String(s).replace(/'/g, "\\'"); }
+
+  // ===== Meals CRUD (options) =====
+  function normalizeMealName(s) { return (s || "").trim(); }
+
+  function addMeal() {
+    const input = document.getElementById("newMealInput");
+    const value = normalizeMealName(input.value);
+    if (!value) return;
+
+    if (!mealOptions.includes(value)) {
+      mealOptions.push(value);
+      saveData();
+      renderMealOptions();
+      renderMealOptionsManager();
+    }
+    input.value = "";
+  }
+
+  // מחיקה מהמאגר בלבד (לא מוחק היסטוריה)
+  function deleteMealOption(name) {
+    if (!confirm(`למחוק את "${name}" מהמאגר?\n(היסטוריה לא תימחק)`)) return;
+    mealOptions = mealOptions.filter(m => m !== name);
+    saveData();
+    renderMealOptions();
+    renderMealOptionsManager();
+  }
+
+  // שינוי שם במאגר + עדכון היסטוריה (כדי שלא יתפצל לשני שמות)
+  function editMealOption(oldName) {
+    const next = normalizeMealName(prompt(`עריכת שם מנה:\n${oldName}\n\nהכנס שם חדש:`, oldName));
+    if (!next) return;
+
+    if (next === oldName) return;
+
+    // אם כבר קיימת מנה בשם החדש - לא נאפשר כדי לא לערבב
+    if (mealOptions.includes(next)) {
+      alert("כבר קיימת מנה בשם הזה. בחר שם אחר.");
+      return;
+    }
+
+    // update options
+    mealOptions = mealOptions.map(m => (m === oldName ? next : m));
+
+    // update history
+    meals = meals.map(entry => {
+      if (entry.split) {
+        const km = { ...(entry.kidMeals || {}) };
+        for (const k of Object.keys(km)) {
+          if (km[k] === oldName) km[k] = next;
+        }
+        return { ...entry, kidMeals: km };
+      } else {
+        if (entry.meal === oldName) return { ...entry, meal: next };
+        return entry;
+      }
+    });
+
+    saveData();
+    renderMealOptions();
+    renderMealOptionsManager();
+    renderMeals();
+    renderWeek();
+  }
+
+  function renderMealOptionsManager() {
+    const ul = document.getElementById("mealsOptionsList");
+    ul.innerHTML = "";
+
+    if (mealOptions.length === 0) {
+      const li = document.createElement("li");
+      li.textContent = "אין מנות במאגר. הוסף מנה.";
+      ul.appendChild(li);
+      return;
+    }
+
+    const sorted = [...mealOptions].sort((a,b) => a.localeCompare(b, "he"));
+    sorted.forEach(name => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <span>${name}</span>
+        <div class="inline" style="gap:8px;">
+          <button class="btn btn-muted" type="button" onclick="editMealOption('${escapeQuotes(name)}')">ערוך</button>
+          <button class="btn btn-danger" type="button" onclick="deleteMealOption('${escapeQuotes(name)}')">מחק</button>
+        </div>
+      `;
+      ul.appendChild(li);
+    });
+  }
+
+  // ===== Reset + delete report =====
   function deleteMeal(id) {
     if (!confirm("למחוק את הדיווח?")) return;
     meals = meals.filter(m => m.id !== id);
@@ -305,9 +385,7 @@
     return `${yyyy}-${mm}-${dd}`;
   }
 
-  function parseISO(dateISO) {
-    return new Date(dateISO + "T00:00:00");
-  }
+  function parseISO(dateISO) { return new Date(dateISO + "T00:00:00"); }
 
   function addDays(dateISO, delta) {
     const d = parseISO(dateISO);
@@ -325,8 +403,6 @@
 
   // ===== Kids management =====
   function normalizeName(s) { return (s || "").trim(); }
-
-  function escapeQuotes(s) { return String(s).replace(/'/g, "\\'"); }
 
   function addKid() {
     const input = document.getElementById("newKidInput");
@@ -487,20 +563,6 @@
 
       list.appendChild(li);
     });
-  }
-
-  // ===== Meal options =====
-  function addMeal() {
-    const input = document.getElementById("newMealInput");
-    const value = (input.value || "").trim();
-    if (!value) return;
-
-    if (!mealOptions.includes(value)) {
-      mealOptions.push(value);
-      saveData();
-      renderMealOptions();
-    }
-    input.value = "";
   }
 
   // ===== Save meal =====
@@ -664,6 +726,7 @@
 
   function renderAll() {
     renderKidsUI();
+    renderMealOptionsManager();
     renderModes();
     toggleMode();
     renderMealOptions();
