@@ -36,6 +36,7 @@
     מנה (במצב "אותה ארוחה לשתיהן"):
     <select id="mealSelect"></select>
   </label>
+  <button type="button" onclick="suggestMeal()">תן לי רעיון</button>
   <br><br>
 
   <label>
@@ -62,11 +63,13 @@
     <label>מיקה אכלה:
       <select id="mealSelectMika"></select>
     </label>
+    <button type="button" onclick="suggestMeal('mika')">רעיונות למיקה</button>
     <br><br>
 
     <label>עומר אכלה:
       <select id="mealSelectOmer"></select>
     </label>
+    <button type="button" onclick="suggestMeal('omer')">רעיונות לעומר</button>
     <br><br>
   </div>
 
@@ -279,11 +282,14 @@
     renderWeek();
   }
 
-  function renderWeek() {
+  function getWeekMeals() {
     const endISO = document.getElementById("weekEndDate").value;
     const startISO = addDays(endISO, -6);
+    return meals.filter(m => isInRange(m.date, startISO, endISO));
+  }
 
-    const weekMeals = meals.filter(m => isInRange(m.date, startISO, endISO));
+  function renderWeek() {
+    const weekMeals = getWeekMeals();
 
     // render week list
     const weekList = document.getElementById("weekList");
@@ -338,6 +344,55 @@
         varietyList.appendChild(li);
       });
     }
+  }
+
+  // ===== Suggestion =====
+  function suggestMeal(target) {
+    if (mealOptions.length === 0) {
+      alert("מאגר המנות ריק. הוסף מנה קודם.");
+      return;
+    }
+
+    const weekMeals = getWeekMeals();
+
+    // count appearances in the selected week
+    const counts = new Map();
+    weekMeals.forEach(m => {
+      if (m.split) {
+        counts.set(m.mikaMeal, (counts.get(m.mikaMeal) || 0) + 1);
+        counts.set(m.omerMeal, (counts.get(m.omerMeal) || 0) + 1);
+      } else {
+        counts.set(m.meal, (counts.get(m.meal) || 0) + 1);
+      }
+    });
+
+    // find minimal count among all options (prefer unseen)
+    let min = Infinity;
+    mealOptions.forEach(opt => {
+      const c = counts.get(opt) || 0;
+      if (c < min) min = c;
+    });
+
+    const candidates = mealOptions.filter(opt => (counts.get(opt) || 0) === min);
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+
+    // apply suggestion
+    const sameForBoth = document.getElementById("sameForBoth").checked;
+
+    if (!target) {
+      // top "idea" button
+      if (sameForBoth) {
+        document.getElementById("mealSelect").value = pick;
+      } else {
+        // if split mode and user pressed top button, set both
+        document.getElementById("mealSelectMika").value = pick;
+        document.getElementById("mealSelectOmer").value = pick;
+      }
+      return;
+    }
+
+    if (target === "mika") document.getElementById("mealSelectMika").value = pick;
+    if (target === "omer") document.getElementById("mealSelectOmer").value = pick;
   }
 
   // ===== Init =====
