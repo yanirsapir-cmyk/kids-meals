@@ -4,43 +4,244 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ארוחות הילדים</title>
+
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#2563eb">
   <link rel="apple-touch-icon" href="icon-192.png">
+
   <style>
-    :root{--bg:#f6f7fb;--card:#fff;--border:#e5e7eb;--primary:#2563eb;--danger:#dc2626;--muted:#6b7280;--shadow:0 6px 18px rgba(0,0,0,.06);--radius:14px}
+    :root{
+      --bg:#f6f7fb; --card:#fff; --border:#e5e7eb;
+      --primary:#2563eb; --primary2:#1d4ed8;
+      --danger:#dc2626; --muted:#6b7280;
+      --shadow:0 6px 18px rgba(0,0,0,0.06);
+      --radius:16px;
+      --pill:#f3f4f6;
+      --boker:#fff7ed; --tzohor:#ecfeff; --erev:#eef2ff; --bein:#fdf2f8;
+    }
     *{box-sizing:border-box}
-    body{margin:0;padding:14px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:#111827;line-height:1.35}
+    body{
+      margin:0; padding:14px;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg); color:#111827; line-height:1.35;
+    }
     h1{margin:6px 0 14px;font-size:24px;font-weight:900}
     h2{margin:0 0 10px;font-size:18px}
     h3{margin:14px 0 6px;font-size:14px;color:var(--muted)}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin-bottom:14px}
-    .field{margin-top:10px}
-    input,select,textarea{width:100%;padding:10px 12px;font-size:16px;border-radius:10px;border:1px solid var(--border);background:#fff}
-    textarea{min-height:150px;resize:vertical}
-    .inline{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .inline input{flex:1;min-width:180px}
-    .btn{padding:10px 14px;border-radius:10px;border:none;font-weight:800;cursor:pointer;white-space:nowrap}
-    .primary{background:var(--primary);color:#fff}
-    .danger{background:var(--danger);color:#fff}
-    .ghost{background:#eef2ff;color:#1e40af}
-    .iconbtn{background:#f3f4f6;color:#111827;padding:8px 10px;border-radius:10px;border:1px solid var(--border);font-weight:800;line-height:1;cursor:pointer}
-    ul{list-style:none;padding:0;margin:10px 0 0}
-    li{display:flex;justify-content:space-between;gap:10px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px;margin-bottom:8px;align-items:center}
-    li span{flex:1}
-    .btn-group{display:flex;gap:8px;align-items:center}
-    .tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-    .tabbtn{border:1px solid var(--border);background:#fff;border-radius:999px;padding:9px 12px;font-weight:900;cursor:pointer}
-    .tabbtn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .card{
+      background:var(--card); border:1px solid var(--border);
+      border-radius:var(--radius); box-shadow:var(--shadow);
+      padding:14px; margin-bottom:14px;
+    }
+    .tabs{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
+    .tabbtn{
+      border:1px solid var(--border); background:#fff;
+      border-radius:999px; padding:9px 12px; font-weight:900; cursor:pointer;
+    }
+    .tabbtn.active{background:var(--primary); color:#fff; border-color:var(--primary);}
     .view{display:none}
     .view.active{display:block}
-    .checks{display:flex;flex-direction:column;gap:10px;margin-top:8px}
-    .checkrow{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:12px;background:#fff}
-    .checkrow input{width:18px;height:18px;margin:0}
+
+    .field{margin-top:10px}
+    label{font-weight:900}
+    input,select,textarea{
+      width:100%; padding:10px 12px; font-size:16px;
+      border-radius:12px; border:1px solid var(--border);
+      background:#fff;
+    }
+    textarea{min-height:140px; resize:vertical}
+
+    .inline{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+    .inline input{flex:1; min-width:180px}
+
+    .btn{
+      padding:10px 14px; border-radius:12px; border:none;
+      font-weight:900; cursor:pointer; white-space:nowrap;
+    }
+    .primary{background:var(--primary); color:#fff}
+    .primary:hover{background:var(--primary2)}
+    .danger{background:var(--danger); color:#fff}
+    .ghost{background:#eef2ff; color:#1e40af; border:1px solid #c7d2fe}
+
+    .iconbtn{
+      background:#f3f4f6; color:#111827;
+      padding:8px 10px; border-radius:12px; border:1px solid var(--border);
+      font-weight:900; line-height:1;
+      cursor:pointer;
+      display:inline-flex; align-items:center; justify-content:center;
+      min-width:40px;
+    }
+
     .note{font-size:13px;color:var(--muted);margin-top:6px}
-    .filters{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;margin:8px 0 10px}
-    .filter{display:flex;align-items:center;gap:6px;font-weight:900;font-size:12px;background:#fff;border:1px solid var(--border);padding:6px 8px;border-radius:999px;white-space:nowrap;flex:0 0 auto}
+
+    .checks{display:flex; flex-direction:column; gap:10px; margin-top:8px;}
+    .checkrow{
+      display:flex; align-items:center; gap:10px;
+      padding:10px; border:1px solid var(--border);
+      border-radius:14px; background:#fff;
+    }
+    .checkrow input{width:18px; height:18px; margin:0}
+
+    ul{list-style:none;padding:0;margin:10px 0 0}
+    li{
+      display:flex; justify-content:space-between; gap:10px;
+      background:#fff; border:1px solid var(--border);
+      border-radius:14px; padding:10px; margin-bottom:8px;
+      align-items:center;
+    }
+    li span{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+    .btn-group{display:flex; gap:8px; align-items:center; flex:0 0 auto}
+
+    .filters{
+      display:flex; gap:8px; flex-wrap:nowrap; overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+      padding-bottom:4px; margin:8px 0 10px;
+    }
+    .filter{
+      display:flex; align-items:center; gap:6px;
+      font-weight:900; font-size:12px;
+      background:#fff; border:1px solid var(--border);
+      padding:6px 8px; border-radius:999px;
+      white-space:nowrap; flex:0 0 auto;
+    }
     .filter input{width:16px;height:16px;margin:0}
+
+    .daycard{
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:18px;
+      padding:10px;
+      margin-bottom:10px;
+      overflow:hidden;
+    }
+    .dayheader{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:8px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:900;
+      font-size:13px;
+      border:1px solid var(--border);
+      white-space:nowrap;
+      background:var(--pill);
+    }
+    .typepill{border:none; min-width:78px;}
+    .type-boker{background:var(--boker)}
+    .type-tzohor{background:var(--tzohor)}
+    .type-erev{background:var(--erev)}
+    .type-bein{background:var(--bein)}
+
+    .entry{
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:8px;
+      margin-bottom:8px;
+      background:#fff;
+    }
+    .entry-top{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:8px; margin-bottom:6px;
+    }
+    .actionrow{display:flex; gap:8px; align-items:center; flex:0 0 auto;}
+    .delbtn{
+      min-width:62px;
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:12px;
+      padding:6px 10px;
+      cursor:pointer;
+      font-weight:900;
+      white-space:nowrap;
+    }
+    .entry-bottom{font-size:13px; font-weight:900}
+    .bottom-normal{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .mealtext{
+      flex:1; min-width:0;
+      text-align:right;
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      font-weight:900;
+    }
+    .kidstext{
+      flex:1; min-width:0;
+      text-align:left;
+      font-weight:900;
+      color:#374151;
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+
+    .splitlist{display:flex; flex-direction:column; gap:4px;}
+    .splitline{
+      display:flex; justify-content:space-between; gap:10px;
+      border:1px dashed var(--border);
+      border-radius:12px;
+      padding:6px 8px;
+      background:#fafafa;
+      font-size:13px;
+    }
+    .splitkid{font-weight:900; white-space:nowrap; flex:0 0 auto;}
+    .splitmeal{
+      font-weight:900; color:#374151;
+      min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      text-align:left; flex:1;
+    }
+
+    .kv{display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px dashed var(--border);}
+    .kv:last-child{border-bottom:none}
+    .kv b{white-space:nowrap}
+    .kv span{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:left; color:#374151; font-weight:900;}
+
+    .modal-backdrop{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,0.35);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:14px;
+      z-index:9999;
+    }
+    .modal{
+      width:100%;
+      max-width:720px;
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow:0 16px 50px rgba(0,0,0,0.2);
+      padding:14px;
+    }
+    .modal-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .modal-title{font-weight:900;font-size:18px}
+    .modal-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .tiny{
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:#f3f4f6;
+      font-weight:900;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .warn{color:var(--danger); font-size:13px; margin-top:8px; display:none;}
+
+    @media(min-width:700px){ body{max-width:860px;margin:auto} }
   </style>
 </head>
 
@@ -57,16 +258,22 @@
 <section id="view-log" class="view active">
   <section class="card">
     <h2>רישום ארוחה</h2>
-    <div class="field"><label>תאריך</label><input type="date" id="dateInput"></div>
+
+    <div class="field">
+      <label>תאריך</label>
+      <input type="date" id="dateInput">
+    </div>
+
     <div class="field">
       <label>סוג ארוחה</label>
-      <select id="mealType">
+      <select id="mealType" onchange="renderLogSelectors()">
         <option value="בוקר">בוקר</option>
         <option value="צהריים">צהריים</option>
         <option value="ערב" selected>ערב</option>
         <option value="ביניים">ביניים</option>
       </select>
     </div>
+
     <div class="field checkrow" style="justify-content:space-between;">
       <div style="display:flex;align-items:center;gap:10px;">
         <input type="checkbox" id="sameForAll" checked onchange="toggleMode()">
@@ -81,7 +288,9 @@
           <select id="mealSelect"></select>
           <button class="btn ghost" type="button" onclick="suggestMeal()">תן לי רעיון</button>
         </div>
+        <div class="note">הבחירה מסוננת לפי סוג הארוחה (אם הגדרת למנה סוגים).</div>
       </div>
+
       <h3>מי אכל?</h3>
       <div id="sameKids" class="checks"></div>
     </div>
@@ -89,6 +298,7 @@
     <div id="splitMode" style="display:none;">
       <h3>בחירה נפרדת לכל ילד</h3>
       <div id="splitKids" class="checks"></div>
+      <div class="note">במצב מפוצל: לכל ילד בוחרים מנה.</div>
     </div>
 
     <div class="field">
@@ -96,6 +306,16 @@
     </div>
 
     <div class="note" id="syncStatus"></div>
+  </section>
+
+  <section class="card">
+    <h2>💡 הידעת?</h2>
+
+    <h3>3 מנות שהוכנו הכי מעט (רק מנות שנוצרו לפני חודש+)</h3>
+    <div id="statsLeast"></div>
+
+    <h3>3 מנות שהכנתי הכי מזמן</h3>
+    <div id="statsOldest"></div>
   </section>
 </section>
 
@@ -114,45 +334,180 @@
   <section class="card">
     <h2>ניהול מנות</h2>
     <div class="inline">
-      <input id="newMealInput" placeholder="שם מנה">
-      <button class="btn primary" type="button" onclick="addMeal()">הוסף</button>
+      <input id="newDishInput" placeholder="שם מנה">
+      <button class="btn primary" type="button" onclick="addDish()">הוסף</button>
     </div>
-    <ul id="mealsOptionsList"></ul>
+    <div class="note">מחיקה כאן מסירה מהמאגר בלבד (לא מוחקת היסטוריה).</div>
+    <ul id="dishesList"></ul>
   </section>
 </section>
 
 <section id="view-data" class="view">
   <section class="card">
-    <h2>סנכרון</h2>
-    <div class="note">כפתור בדיקה: שולח את כל הנתונים לגוגל עכשיו.</div>
-    <button class="btn primary" type="button" onclick="forceSyncNow()">שלח לגוגל עכשיו</button>
-    <div class="note" id="forceResult"></div>
+    <h2>היסטוריה</h2>
+    <div class="note">ברירת מחדל: הכול מוצג. מסננים רק אם מסמנים.</div>
+
+    <div class="note" style="margin-top:10px;">סינון לפי ילדים (אופציונלי)</div>
+    <div id="kidFilters" class="filters"></div>
+
+    <div class="note" style="margin-top:6px;">סינון לפי סוג ארוחה</div>
+    <div class="filters" id="typeFilters">
+      <label class="filter"><input type="checkbox" value="בוקר" checked onchange="renderData()"> בוקר</label>
+      <label class="filter"><input type="checkbox" value="צהריים" checked onchange="renderData()"> צהריים</label>
+      <label class="filter"><input type="checkbox" value="ערב" checked onchange="renderData()"> ערב</label>
+      <label class="filter"><input type="checkbox" value="ביניים" checked onchange="renderData()"> ביניים</label>
+    </div>
+
+    <div id="historyWrap"></div>
   </section>
 
   <section class="card">
-    <h2>איפוס</h2>
-    <button class="btn danger" type="button" onclick="resetData()">איפוס נתונים</button>
+    <h2>שבוע אחרון</h2>
+    <label>תאריך סיום שבוע (כולל)</label>
+    <input type="date" id="weekEndDate" onchange="renderData()">
+
+    <div id="weekWrap" style="margin-top:10px;"></div>
+
+    <h3>גיוון (כמה פעמים כל מנה בשבוע)</h3>
+    <ul id="varietyList"></ul>
+  </section>
+
+  <section class="card">
+    <h2>כלי בדיקה</h2>
+    <div class="note">מוחק רק את ההיסטוריה (רישומי ארוחות). לא מוחק ילדים/מנות/מתכונים.</div>
+    <button class="btn danger" type="button" onclick="clearHistoryOnly()">מחק היסטוריה</button>
+  </section>
+
+  <section class="card">
+    <h2>איפוס נתונים</h2>
+    <div class="note">זה מוחק הכל מהמכשיר (ילדים/מנות/היסטוריה/מתכונים).</div>
+    <button class="btn danger" type="button" onclick="resetAll()">איפוס מלא</button>
   </section>
 </section>
 
+<!-- Recipe Modal -->
+<div id="recipeBackdrop" class="modal-backdrop" onclick="closeRecipeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title" id="recipeTitle">מתכון</div>
+      <div class="modal-actions">
+        <button class="tiny" type="button" onclick="saveRecipe()">שמירה</button>
+        <button class="tiny" type="button" onclick="hideRecipeModal()">סגור</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>קישור (אופציונלי)</label>
+      <div class="inline">
+        <input id="recipeUrlInput" placeholder="https://...">
+        <button class="tiny" type="button" onclick="pasteUrl()">הדבק קישור</button>
+        <button class="tiny" type="button" onclick="openRecipeLink()">פתח קישור</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>מתכון</label>
+      <div class="inline">
+        <button class="tiny" type="button" onclick="pasteRecipe()">הדבק מתכון</button>
+      </div>
+      <textarea id="recipeTextInput" placeholder="הדבק/כתוב כאן את המתכון..."></textarea>
+      <div id="pasteWarn" class="warn">אם ההדבקה האוטומטית לא עובדת — הדבק ידנית (לחיצה ארוכה → Paste).</div>
+    </div>
+
+    <div class="field">
+      <label>סוגי ארוחות למנה הזו</label>
+      <div class="checks" id="recipeTypeChecks"></div>
+      <div class="note">אם לא מסמנים כלום — המנה תופיע בכל סוגי הארוחות.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Report Modal -->
+<div id="editBackdrop" class="modal-backdrop" onclick="closeEditModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">✏️ עריכת דיווח</div>
+      <div class="modal-actions">
+        <button class="tiny" type="button" onclick="saveEditedReport()">שמירה</button>
+        <button class="tiny" type="button" onclick="hideEditModal()">סגור</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>תאריך</label>
+      <input type="date" id="editDate">
+    </div>
+
+    <div class="field">
+      <label>סוג ארוחה</label>
+      <select id="editType">
+        <option value="בוקר">בוקר</option>
+        <option value="צהריים">צהריים</option>
+        <option value="ערב">ערב</option>
+        <option value="ביניים">ביניים</option>
+      </select>
+    </div>
+
+    <div class="field checkrow" style="justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <input type="checkbox" id="editSame" onchange="toggleEditMode()">
+        <strong>אותה ארוחה לכולם</strong>
+      </div>
+    </div>
+
+    <div id="editSameMode">
+      <div class="field">
+        <label>מנה</label>
+        <select id="editMealSelect"></select>
+      </div>
+
+      <h3>מי אכל?</h3>
+      <div id="editKidsChecks" class="checks"></div>
+    </div>
+
+    <div id="editSplitMode" style="display:none;">
+      <h3>בחירה נפרדת לכל ילד</h3>
+      <div id="editSplitKids" class="checks"></div>
+      <div class="note">במצב מפוצל: סמן רק ילדים שרלוונטיים לדיווח הזה.</div>
+    </div>
+  </div>
+</div>
+
 <script>
-/* ===== Google Sync GET write ===== */
+/* =========================
+   Google Sync (GET write)
+   ========================= */
 const SYNC_URL = "https://script.google.com/macros/s/AKfycby8gDkzATtKwGFqFguvvTcqZ0jC1FCADAFWw1PLoOzVAmV1UwuZiIPkC1YNhmD_4pi4/exec";
 const SYNC_TOKEN = "CHANGE_ME_12345";
+
+/** חשוב: במכשיר שלך תשאיר "Yanir". אצל אשתך תשני ל-"Wife" (או כל שם). */
 const DEVICE_NAME = "Yanir";
 
-let syncTimer=null;
+/** כלל הניצחון: Yanir תמיד גובר.
+ *  - במכשיר Yanir: לא דורסים לוקאל מהענן.
+ *  - במכשיר Wife: תמיד טוענים מהענן בהפעלה (כדי להתיישר ל-Yanir).
+ */
+function localHasAnyData(){
+  try{
+    const kids = JSON.parse(localStorage.getItem("kids") || "[]");
+    const dishes = JSON.parse(localStorage.getItem("dishes") || "[]");
+    const logs = JSON.parse(localStorage.getItem("logs") || "[]");
+    return kids.length || dishes.length || logs.length;
+  } catch { return false; }
+}
 
 function setSyncMsg(msg){
-  const el=document.getElementById("syncStatus");
+  const el = document.getElementById("syncStatus");
   if(el) el.textContent = msg || "";
 }
 
+let syncTimer = null;
+
 async function doSyncSend(){
   const payload = {
-    meals: JSON.parse(localStorage.getItem("meals") || "[]"),
     kids: JSON.parse(localStorage.getItem("kids") || "[]"),
-    mealOptions: JSON.parse(localStorage.getItem("mealOptions") || "[]")
+    dishes: JSON.parse(localStorage.getItem("dishes") || "[]"),
+    logs: JSON.parse(localStorage.getItem("logs") || "[]")
   };
   const dataStr = JSON.stringify(payload);
 
@@ -168,43 +523,103 @@ async function doSyncSend(){
 function syncSave(){
   try{
     if(syncTimer) clearTimeout(syncTimer);
-    syncTimer=setTimeout(async ()=>{
-      setSyncMsg("מסנכרן לגוגל...");
+    syncTimer = setTimeout(async ()=>{
+      setSyncMsg("מסנכרן...");
       await doSyncSend();
       setSyncMsg("סונכרן ✅");
-    }, 450);
+    }, 500);
   }catch(e){
-    console.warn(e);
+    console.warn("syncSave failed", e);
     setSyncMsg("סנכרון נכשל ❌");
   }
 }
 
-async function forceSyncNow(){
-  const el=document.getElementById("forceResult");
-  el.textContent="שולח...";
+async function syncLoad(){
   try{
-    await doSyncSend();
-    el.textContent="נשלח ✅";
-  }catch(e){
-    console.warn(e);
-    el.textContent="נכשל ❌";
+    // Yanir לא נדרס.
+    if(DEVICE_NAME === "Yanir" && localHasAnyData()) return;
+
+    const res = await fetch(`${SYNC_URL}?token=${encodeURIComponent(SYNC_TOKEN)}`);
+    const j = await res.json();
+    if(!j.ok || !j.data) return;
+
+    const remote = JSON.parse(j.data);
+
+    localStorage.setItem("kids", JSON.stringify(remote.kids || []));
+    localStorage.setItem("dishes", JSON.stringify(remote.dishes || []));
+    localStorage.setItem("logs", JSON.stringify(remote.logs || []));
+
+    location.reload();
+  } catch(e){
+    console.warn("syncLoad failed", e);
   }
 }
 
-/* ===== App Data ===== */
-const KM="meals", KK="kids", KO="mealOptions";
-let meals = JSON.parse(localStorage.getItem(KM)) || [];
-let kids = JSON.parse(localStorage.getItem(KK)) || ["מיקה","עומר"];
-let mealOptions = JSON.parse(localStorage.getItem(KO)) || [];
+/* =========================
+   App data model
+   =========================
+   kids: ["מיקה","עומר",...]
+   dishes: [{dish, createdAt, recipeText, recipeUrl, types:["בוקר","צהריים"...]}]
+   logs:
+     - same: {id, createdAt, date, type, same:true, meal, kids:[...]}
+     - split:{id, createdAt, date, type, same:false, kidMeals:{name: dish}}
+*/
+const KIDS_KEY = "kids";
+const DISHES_KEY = "dishes";
+const LOGS_KEY = "logs";
 
-function save(){
-  localStorage.setItem(KM, JSON.stringify(meals));
-  localStorage.setItem(KK, JSON.stringify(kids));
-  localStorage.setItem(KO, JSON.stringify(mealOptions));
+const DAY = 24*60*60*1000;
+const MONTH_30 = 30*DAY;
+
+const TYPES = ["בוקר","צהריים","ערב","ביניים"];
+
+function uid(){ return "r_" + Math.random().toString(16).slice(2) + "_" + Date.now(); }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function isoDateMs(d){ return new Date(d + "T00:00:00").getTime(); }
+function addDays(dateISO, n){
+  const x = new Date(dateISO + "T00:00:00");
+  x.setDate(x.getDate() + n);
+  return x.toISOString().slice(0,10);
+}
+
+let kids = JSON.parse(localStorage.getItem(KIDS_KEY)) || ["מיקה","עומר"];
+let dishes = normalizeDishes(JSON.parse(localStorage.getItem(DISHES_KEY)));
+let logs = JSON.parse(localStorage.getItem(LOGS_KEY)) || [];
+
+function normalizeDishes(raw){
+  if(!raw) return [];
+  if(Array.isArray(raw) && raw.length && typeof raw[0] === "string"){
+    const oldCreated = Date.now() - 60*DAY;
+    return raw.map(name => ({
+      dish: String(name).trim(),
+      createdAt: oldCreated,
+      recipeText: "",
+      recipeUrl: "",
+      types: [...TYPES]
+    })).filter(x => x.dish);
+  }
+  if(Array.isArray(raw)){
+    return raw.map(o => ({
+      dish: String(o?.dish ?? "").trim(),
+      createdAt: Number(o?.createdAt) || (Date.now() - 60*DAY),
+      recipeText: String(o?.recipeText ?? ""),
+      recipeUrl: String(o?.recipeUrl ?? ""),
+      types: Array.isArray(o?.types) ? o.types.filter(t=>TYPES.includes(t)) : [...TYPES]
+    })).filter(x => x.dish);
+  }
+  return [];
+}
+
+function saveAll(){
+  localStorage.setItem(KIDS_KEY, JSON.stringify(kids));
+  localStorage.setItem(DISHES_KEY, JSON.stringify(dishes));
+  localStorage.setItem(LOGS_KEY, JSON.stringify(logs));
   syncSave();
 }
 
-/* ===== UI ===== */
+/* =========================
+   Tabs
+   ========================= */
 function showTab(key){
   document.querySelectorAll(".tabbtn").forEach(b => b.classList.remove("active"));
   document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
@@ -214,134 +629,846 @@ function showTab(key){
   document.getElementById(m[1]).classList.add("active");
 }
 
+/* =========================
+   UI helpers
+   ========================= */
+function typeClass(t){
+  if(t==="בוקר") return "type-boker";
+  if(t==="צהריים") return "type-tzohor";
+  if(t==="ערב") return "type-erev";
+  return "type-bein";
+}
+function dishHasRecipe(d){
+  const t = (d.recipeText||"").trim();
+  const u = (d.recipeUrl||"").trim();
+  return t.length>0 || u.length>0;
+}
+function getDishByName(name){
+  return dishes.find(d => d.dish === name) || null;
+}
+function dishAllowedForType(dishName, mealType){
+  const d = getDishByName(dishName);
+  if(!d) return false;
+  const types = d.types && d.types.length ? d.types : TYPES;
+  return types.includes(mealType);
+}
+function getDishesForType(mealType){
+  const arr = dishes
+    .map(d => d.dish)
+    .filter(name => dishAllowedForType(name, mealType));
+  // אם אין שום מנה מסוננת, נחזיר הכול כדי שלא "ייעלם"
+  return arr.length ? arr : dishes.map(d => d.dish);
+}
+
+/* =========================
+   Render: kids & dishes
+   ========================= */
+function renderKids(){
+  const ul = document.getElementById("kidsList");
+  ul.innerHTML = "";
+  kids.forEach(k => {
+    const row = document.createElement("li");
+    row.innerHTML = `
+      <span>${k}</span>
+      <div class="btn-group">
+        <button class="iconbtn" type="button" title="מחק">❌</button>
+      </div>
+    `;
+    row.querySelector("button").onclick = () => removeKid(k);
+    ul.appendChild(row);
+  });
+}
+
+function renderDishes(){
+  const ul = document.getElementById("dishesList");
+  ul.innerHTML = "";
+  const sorted = [...dishes].sort((a,b)=>a.dish.localeCompare(b.dish,"he"));
+  sorted.forEach(d => {
+    const mark = dishHasRecipe(d) ? " ✅" : "";
+    const row = document.createElement("li");
+    row.innerHTML = `
+      <span>${d.dish}${mark}</span>
+      <div class="btn-group">
+        <button class="iconbtn" type="button" title="מתכון">📖</button>
+        <button class="iconbtn" type="button" title="ערוך שם">✏️</button>
+        <button class="iconbtn" type="button" title="מחק מהמאגר">❌</button>
+      </div>
+    `;
+    const [btnRecipe, btnEdit, btnDel] = row.querySelectorAll("button");
+    btnRecipe.onclick = () => openRecipeModal(d.dish);
+    btnEdit.onclick = () => editDishName(d.dish);
+    btnDel.onclick = () => deleteDish(d.dish);
+    ul.appendChild(row);
+  });
+}
+
+/* =========================
+   Render: log selectors
+   ========================= */
 function toggleMode(){
   const same = document.getElementById("sameForAll").checked;
   document.getElementById("sameMode").style.display = same ? "block" : "none";
   document.getElementById("splitMode").style.display = same ? "none" : "block";
 }
 
-function renderSelectors(){
-  const sel=document.getElementById("mealSelect");
-  sel.innerHTML="";
-  mealOptions.forEach(m=>{
-    const o=document.createElement("option");
-    o.value=m; o.textContent=m;
+function renderLogSelectors(){
+  // dropdown של מנות (לפי סוג הארוחה)
+  const type = document.getElementById("mealType").value;
+  const available = getDishesForType(type);
+
+  const sel = document.getElementById("mealSelect");
+  const current = sel.value;
+  sel.innerHTML = "";
+  available.forEach(name => {
+    const o = document.createElement("option");
+    o.value = name; o.textContent = name;
     sel.appendChild(o);
   });
+  if(current && available.includes(current)) sel.value = current;
 
-  const sameKids=document.getElementById("sameKids");
-  sameKids.innerHTML="";
-  kids.forEach(k=>{
-    const r=document.createElement("div");
-    r.className="checkrow";
-    r.innerHTML=`<input type="checkbox" id="cb_${k}" checked><div style="font-weight:800">${k}</div>`;
-    sameKids.appendChild(r);
+  // checkboxes של ילדים (same mode)
+  const sameKids = document.getElementById("sameKids");
+  sameKids.innerHTML = "";
+  kids.forEach(k => {
+    const row = document.createElement("div");
+    row.className = "checkrow";
+    row.innerHTML = `<input type="checkbox" id="cb_${cssSafe(k)}" checked><div style="font-weight:900;">${k}</div>`;
+    sameKids.appendChild(row);
   });
 
-  const split=document.getElementById("splitKids");
-  split.innerHTML="";
-  kids.forEach(k=>{
-    const r=document.createElement("div");
-    r.className="checkrow";
-    r.innerHTML=`<div style="font-weight:900;min-width:80px">${k}</div><select id="sel_${k}"></select>`;
-    const s=r.querySelector("select");
-    mealOptions.forEach(m=>{
-      const o=document.createElement("option");
-      o.value=m;o.textContent=m;
+  // split mode rows
+  const splitKids = document.getElementById("splitKids");
+  splitKids.innerHTML = "";
+  kids.forEach(k => {
+    const row = document.createElement("div");
+    row.className = "checkrow";
+    row.innerHTML = `<div style="font-weight:900; min-width:90px;">${k}</div><select id="sel_${cssSafe(k)}"></select>`;
+    const s = row.querySelector("select");
+    available.forEach(name => {
+      const o = document.createElement("option");
+      o.value = name; o.textContent = name;
       s.appendChild(o);
     });
-    split.appendChild(r);
+    splitKids.appendChild(row);
   });
+
+  // filters rebuild
+  renderKidFilters();
 }
 
-function renderKids(){
-  const ul=document.getElementById("kidsList");
-  ul.innerHTML="";
-  kids.forEach(k=>{
-    const li=document.createElement("li");
-    li.innerHTML=`<span>${k}</span><button class="btn danger" type="button">מחק</button>`;
-    li.querySelector("button").onclick=()=>removeKid(k);
-    ul.appendChild(li);
-  });
-}
-
-function renderMeals(){
-  const ul=document.getElementById("mealsOptionsList");
-  ul.innerHTML="";
-  mealOptions.forEach(m=>{
-    const li=document.createElement("li");
-    li.innerHTML=`<span>${m}</span><button class="btn danger" type="button">מחק</button>`;
-    li.querySelector("button").onclick=()=>deleteMeal(m);
-    ul.appendChild(li);
-  });
-}
-
+/* =========================
+   Kids CRUD
+   ========================= */
 function addKid(){
-  const v=(newKidInput.value||"").trim();
+  const v = (document.getElementById("newKidInput").value || "").trim();
   if(!v) return;
+  if(kids.includes(v)) return alert("הילד/ה כבר קיימ/ת");
   kids.push(v);
-  newKidInput.value="";
-  save(); renderAll();
+  document.getElementById("newKidInput").value = "";
+  saveAll();
+  renderAll();
 }
-function removeKid(k){
-  kids=kids.filter(x=>x!==k);
-  save(); renderAll();
-}
-function addMeal(){
-  const v=(newMealInput.value||"").trim();
-  if(!v) return;
-  mealOptions.push(v);
-  newMealInput.value="";
-  save(); renderAll();
-}
-function deleteMeal(m){
-  mealOptions=mealOptions.filter(x=>x!==m);
-  save(); renderAll();
+function removeKid(name){
+  if(!confirm(`למחוק את "${name}"?`)) return;
+  kids = kids.filter(k => k !== name);
+
+  // להסיר מהיסטוריה
+  logs = logs.map(r => {
+    if(r.same){
+      return {...r, kids: (r.kids||[]).filter(k => k !== name)};
+    } else {
+      const km = {...(r.kidMeals||{})};
+      delete km[name];
+      return {...r, kidMeals: km};
+    }
+  }).filter(r => {
+    if(r.same) return (r.kids||[]).length>0;
+    return Object.keys(r.kidMeals||{}).length>0;
+  });
+
+  saveAll();
+  renderAll();
 }
 
+/* =========================
+   Dishes CRUD
+   ========================= */
+function addDish(){
+  const v = (document.getElementById("newDishInput").value || "").trim();
+  if(!v) return;
+  if(dishes.some(d => d.dish === v)) return alert("המנה כבר קיימת");
+  dishes.push({
+    dish: v,
+    createdAt: Date.now(),
+    recipeText: "",
+    recipeUrl: "",
+    types: [...TYPES] // ברירת מחדל לכל הסוגים
+  });
+  document.getElementById("newDishInput").value = "";
+  saveAll();
+  renderAll();
+}
+
+function editDishName(oldName){
+  const next = (prompt("שם חדש למנה:", oldName) || "").trim();
+  if(!next) return;
+  if(next === oldName) return;
+  if(dishes.some(d => d.dish === next)) return alert("כבר קיימת מנה בשם הזה");
+
+  dishes = dishes.map(d => d.dish === oldName ? {...d, dish: next} : d);
+
+  // עדכון היסטוריה
+  logs = logs.map(r => {
+    if(r.same){
+      return r.meal === oldName ? {...r, meal: next} : r;
+    } else {
+      const km = {...(r.kidMeals||{})};
+      Object.keys(km).forEach(k => { if(km[k] === oldName) km[k] = next; });
+      return {...r, kidMeals: km};
+    }
+  });
+
+  saveAll();
+  renderAll();
+}
+
+function deleteDish(name){
+  if(!confirm(`למחוק את "${name}" מהמאגר בלבד? (היסטוריה לא תימחק)`)) return;
+  dishes = dishes.filter(d => d.dish !== name);
+  saveAll();
+  renderAll();
+}
+
+/* =========================
+   Save meal (log)
+   ========================= */
 function saveMeal(){
-  const date=dateInput.value;
-  const type=mealType.value;
+  if(!dishes.length) return alert("אין מנות במאגר. הוסף מנה קודם.");
+  if(!kids.length) return alert("אין ילדים. הוסף ילד/ה קודם.");
+
+  const date = document.getElementById("dateInput").value;
+  const type = document.getElementById("mealType").value;
   if(!date) return alert("בחר תאריך");
-  if(!mealOptions.length) return alert("אין מנות");
-  if(!kids.length) return alert("אין ילדים");
+
+  const createdAt = Date.now();
 
   if(document.getElementById("sameForAll").checked){
-    const meal=mealSelect.value;
-    const selectedKids=kids.filter(k=>document.getElementById("cb_"+k)?.checked);
-    meals.push({id:Date.now()+"",date,type,meal,kids:selectedKids});
+    const meal = document.getElementById("mealSelect").value;
+    const selectedKids = kids.filter(k => document.getElementById("cb_"+cssSafe(k))?.checked);
+    if(!meal) return alert("בחר מנה");
+    if(!selectedKids.length) return alert("סמן לפחות ילד/ה אחד/ת");
+    logs.push({ id: uid(), createdAt, date, type, same:true, meal, kids: selectedKids });
   }else{
-    const kidMeals={};
-    kids.forEach(k=>{
-      kidMeals[k]=document.getElementById("sel_"+k).value;
-    });
-    meals.push({id:Date.now()+"",date,type,split:true,kidMeals});
+    const km = {};
+    for(const k of kids){
+      const sel = document.getElementById("sel_"+cssSafe(k));
+      const val = sel ? sel.value : "";
+      if(!val) return alert(`בחר מנה עבור ${k}`);
+      km[k] = val;
+    }
+    logs.push({ id: uid(), createdAt, date, type, same:false, kidMeals: km });
   }
 
-  save();
-  setSyncMsg("נשמר ✅ (מסנכרן...)");
+  saveAll();
+  renderAll();
 }
 
 function suggestMeal(){
-  if(!mealOptions.length) return;
-  mealSelect.value = mealOptions[Math.floor(Math.random()*mealOptions.length)];
+  if(!dishes.length) return;
+  const end = document.getElementById("weekEndDate").value || document.getElementById("dateInput").value;
+  if(!end) return;
+  const start = addDays(end, -6);
+
+  const type = document.getElementById("mealType").value;
+  const candidates = getDishesForType(type);
+  if(!candidates.length) return;
+
+  const week = logs.filter(r => r.date >= start && r.date <= end && r.type === type);
+
+  const counts = new Map();
+  week.forEach(r => {
+    if(r.same){
+      counts.set(r.meal, (counts.get(r.meal)||0) + 1);
+    } else {
+      Object.values(r.kidMeals||{}).forEach(m => counts.set(m, (counts.get(m)||0) + 1));
+    }
+  });
+
+  let min = Infinity;
+  candidates.forEach(m => { min = Math.min(min, counts.get(m)||0); });
+  const mins = candidates.filter(m => (counts.get(m)||0) === min);
+  document.getElementById("mealSelect").value = mins[Math.floor(Math.random()*mins.length)];
 }
 
-function resetData(){
-  if(!confirm("איפוס מוחלט?")) return;
+/* =========================
+   Data tab render
+   ========================= */
+let kidFilterBuiltFor = "";
+function renderKidFilters(){
+  const signature = kids.join("|");
+  if(signature === kidFilterBuiltFor) return;
+  const host = document.getElementById("kidFilters");
+  host.innerHTML = "";
+  kids.forEach(k => {
+    const lab = document.createElement("label");
+    lab.className = "filter";
+    lab.innerHTML = `<input type="checkbox" value="${escapeHtml(k)}" onchange="renderData()"> ${escapeHtml(k)}`;
+    host.appendChild(lab);
+  });
+  kidFilterBuiltFor = signature;
+}
+
+function getActiveTypes(){
+  const checked = Array.from(document.querySelectorAll("#typeFilters input:checked")).map(x=>x.value);
+  return checked.length ? checked : [...TYPES];
+}
+function getActiveKids(){
+  return Array.from(document.querySelectorAll("#kidFilters input:checked")).map(x=>x.value);
+}
+function recordKidsList(r){
+  if(r.same) return r.kids || [];
+  return Object.keys(r.kidMeals||{});
+}
+function recordMatchesKids(r, activeKids){
+  if(!activeKids.length) return true; // אם לא מסמנים כלום — הכול
+  const rk = recordKidsList(r);
+  return rk.some(k => activeKids.includes(k));
+}
+
+function groupByDate(items){
+  const map = new Map();
+  items.forEach(r => {
+    const d = r.date || "";
+    if(!map.has(d)) map.set(d, []);
+    map.get(d).push(r);
+  });
+  const dates = [...map.keys()].sort((a,b)=>b.localeCompare(a));
+  return dates.map(d => ({
+    date: d,
+    items: map.get(d).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))
+  }));
+}
+
+function createEntry(r){
+  const entry = document.createElement("div");
+  entry.className = "entry";
+
+  const top = document.createElement("div");
+  top.className = "entry-top";
+
+  const typeP = document.createElement("span");
+  typeP.className = "pill typepill " + typeClass(r.type);
+  typeP.textContent = r.type || "";
+
+  const actions = document.createElement("div");
+  actions.className = "actionrow";
+
+  const editBtn = document.createElement("button");
+  editBtn.className = "iconbtn";
+  editBtn.type = "button";
+  editBtn.title = "ערוך";
+  editBtn.textContent = "✏️";
+  editBtn.onclick = () => openEditModal(r.id);
+
+  const del = document.createElement("button");
+  del.className = "delbtn";
+  del.type = "button";
+  del.textContent = "מחק";
+  del.onclick = () => deleteReport(r.id);
+
+  actions.appendChild(editBtn);
+  actions.appendChild(del);
+
+  top.appendChild(typeP);
+  top.appendChild(actions);
+
+  const bottom = document.createElement("div");
+  bottom.className = "entry-bottom";
+
+  if(r.same){
+    const wrap = document.createElement("div");
+    wrap.className = "bottom-normal";
+
+    const meal = document.createElement("div");
+    meal.className = "mealtext";
+    meal.textContent = r.meal || "";
+
+    const kidsT = document.createElement("div");
+    kidsT.className = "kidstext";
+    kidsT.textContent = (r.kids||[]).join(", ");
+
+    wrap.appendChild(meal);
+    wrap.appendChild(kidsT);
+    bottom.appendChild(wrap);
+  } else {
+    const list = document.createElement("div");
+    list.className = "splitlist";
+    const km = r.kidMeals || {};
+    Object.keys(km).forEach(k => {
+      const line = document.createElement("div");
+      line.className = "splitline";
+      line.innerHTML = `<div class="splitkid">${escapeHtml(k)}:</div><div class="splitmeal">${escapeHtml(km[k])}</div>`;
+      list.appendChild(line);
+    });
+    bottom.appendChild(list);
+  }
+
+  entry.appendChild(top);
+  entry.appendChild(bottom);
+  return entry;
+}
+
+function renderGrouped(container, items){
+  container.innerHTML = "";
+  const groups = groupByDate(items);
+  if(!groups.length){
+    const empty = document.createElement("div");
+    empty.className = "note";
+    empty.textContent = "אין רישומים להצגה.";
+    container.appendChild(empty);
+    return;
+  }
+  groups.forEach(g => {
+    const day = document.createElement("div");
+    day.className = "daycard";
+
+    const head = document.createElement("div");
+    head.className = "dayheader";
+    const dateP = document.createElement("span");
+    dateP.className = "pill";
+    dateP.textContent = g.date;
+
+    head.appendChild(dateP);
+    day.appendChild(head);
+
+    g.items.forEach(r => day.appendChild(createEntry(r)));
+    container.appendChild(day);
+  });
+}
+
+function renderData(){
+  renderKidFilters();
+
+  const types = getActiveTypes();
+  const activeKids = getActiveKids();
+
+  const all = logs
+    .filter(r => types.includes(r.type))
+    .filter(r => recordMatchesKids(r, activeKids))
+    .sort((a,b)=> (b.date||"").localeCompare(a.date||"") || (b.createdAt||0)-(a.createdAt||0));
+
+  renderGrouped(document.getElementById("historyWrap"), all);
+
+  // Week view
+  const end = document.getElementById("weekEndDate").value || document.getElementById("dateInput").value;
+  if(!end){
+    document.getElementById("weekWrap").innerHTML = "";
+    document.getElementById("varietyList").innerHTML = "";
+    return;
+  }
+  const start = addDays(end, -6);
+
+  const week = logs
+    .filter(r => r.date >= start && r.date <= end)
+    .filter(r => types.includes(r.type))
+    .filter(r => recordMatchesKids(r, activeKids))
+    .sort((a,b)=> (b.date||"").localeCompare(a.date||"") || (b.createdAt||0)-(a.createdAt||0));
+
+  renderGrouped(document.getElementById("weekWrap"), week);
+
+  // Variety
+  const counts = new Map();
+  week.forEach(r => {
+    if(r.same){
+      counts.set(r.meal, (counts.get(r.meal)||0)+1);
+    }else{
+      Object.values(r.kidMeals||{}).forEach(m => counts.set(m, (counts.get(m)||0)+1));
+    }
+  });
+
+  const variety = document.getElementById("varietyList");
+  variety.innerHTML = "";
+  const entries = [...counts.entries()].sort((a,b)=>b[1]-a[1] || a[0].localeCompare(b[0],"he"));
+  if(!entries.length){
+    const li = document.createElement("li");
+    li.innerHTML = `<span>אין נתונים לגיוון בשבוע הזה</span>`;
+    variety.appendChild(li);
+  } else {
+    entries.forEach(([meal,c])=>{
+      const li = document.createElement("li");
+      li.innerHTML = `<span>${escapeHtml(meal)} — ${c} פעמים</span>`;
+      variety.appendChild(li);
+    });
+  }
+
+  renderDidYouKnow();
+}
+
+/* =========================
+   Delete / clear / reset
+   ========================= */
+function deleteReport(id){
+  if(!confirm("למחוק דיווח?")) return;
+  logs = logs.filter(r => r.id !== id);
+  saveAll();
+  renderAll();
+}
+function clearHistoryOnly(){
+  if(!confirm("למחוק את כל ההיסטוריה?")) return;
+  logs = [];
+  saveAll();
+  renderAll();
+}
+function resetAll(){
+  if(!confirm("איפוס מלא?")) return;
   localStorage.clear();
   location.reload();
 }
 
-function renderAll(){
-  renderSelectors();
-  renderKids();
-  renderMeals();
+/* =========================
+   “Did you know?”
+   ========================= */
+function countDishUsageAllTime(){
+  const counts = new Map();
+  logs.forEach(r => {
+    if(r.same){
+      counts.set(r.meal, (counts.get(r.meal)||0)+1);
+    } else {
+      Object.values(r.kidMeals||{}).forEach(m => counts.set(m, (counts.get(m)||0)+1));
+    }
+  });
+  return counts;
+}
+function lastUsedByDish(){
+  const last = new Map();
+  logs.forEach(r => {
+    const t = isoDateMs(r.date) + ((Number(r.createdAt)||0) % DAY);
+    if(r.same){
+      const d = r.meal;
+      const prev = last.get(d);
+      if(prev==null || t>prev) last.set(d, t);
+    } else {
+      Object.values(r.kidMeals||{}).forEach(d => {
+        const prev = last.get(d);
+        if(prev==null || t>prev) last.set(d, t);
+      });
+    }
+  });
+  return last;
+}
+function fmtDate(ms){
+  const d = new Date(ms);
+  const yyyy=d.getFullYear();
+  const mm=String(d.getMonth()+1).padStart(2,"0");
+  const dd=String(d.getDate()).padStart(2,"0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+function renderDidYouKnow(){
+  const counts = countDishUsageAllTime();
+  const last = lastUsedByDish();
+
+  const cutoff = Date.now() - MONTH_30;
+  const eligible = dishes.filter(d => (d.createdAt||0) <= cutoff);
+
+  const least = [...eligible]
+    .map(d => ({ dish: d.dish, c: counts.get(d.dish) || 0 }))
+    .sort((a,b)=> a.c - b.c || a.dish.localeCompare(b.dish,"he"))
+    .slice(0,3);
+
+  const statsLeast = document.getElementById("statsLeast");
+  statsLeast.innerHTML = "";
+  if(!least.length){
+    statsLeast.innerHTML = `<div class="note">עדיין אין מנות שעבר עליהן חודש מאז שנוצרו.</div>`;
+  } else {
+    least.forEach(x => {
+      const row = document.createElement("div");
+      row.className = "kv";
+      row.innerHTML = `<b>${escapeHtml(x.dish)}</b><span>${x.c} פעמים</span>`;
+      statsLeast.appendChild(row);
+    });
+  }
+
+  const statsOldest = document.getElementById("statsOldest");
+  statsOldest.innerHTML = "";
+  const oldest = [...last.entries()]
+    .map(([dish, t]) => ({ dish, t }))
+    .sort((a,b)=> a.t - b.t)
+    .slice(0,3);
+
+  if(!oldest.length){
+    statsOldest.innerHTML = `<div class="note">עדיין אין דיווחים כדי לחשב “הכי מזמן”.</div>`;
+  } else {
+    oldest.forEach(x => {
+      const row = document.createElement("div");
+      row.className = "kv";
+      row.innerHTML = `<b>${escapeHtml(x.dish)}</b><span>${fmtDate(x.t)}</span>`;
+      statsOldest.appendChild(row);
+    });
+  }
 }
 
-const today=new Date().toISOString().slice(0,10);
-dateInput.value=today;
+/* =========================
+   Recipe modal (recipe + url + types)
+   ========================= */
+let recipeDishName = null;
+
+function openRecipeModal(dishName){
+  recipeDishName = dishName;
+  const d = getDishByName(dishName);
+  if(!d) return;
+
+  document.getElementById("recipeTitle").textContent = `📖 מתכון: ${dishName}`;
+  document.getElementById("recipeTextInput").value = d.recipeText || "";
+  document.getElementById("recipeUrlInput").value = d.recipeUrl || "";
+  document.getElementById("pasteWarn").style.display = "none";
+
+  // types checkboxes
+  const host = document.getElementById("recipeTypeChecks");
+  host.innerHTML = "";
+  TYPES.forEach(t => {
+    const row = document.createElement("div");
+    row.className = "checkrow";
+    const checked = (d.types && d.types.length ? d.types : TYPES).includes(t);
+    row.innerHTML = `<input type="checkbox" id="rt_${t}" ${checked ? "checked":""}><div style="font-weight:900;">${t}</div>`;
+    host.appendChild(row);
+  });
+
+  document.getElementById("recipeBackdrop").style.display = "flex";
+}
+function hideRecipeModal(){
+  document.getElementById("recipeBackdrop").style.display = "none";
+  recipeDishName = null;
+}
+function closeRecipeModal(e){
+  if(e.target === document.getElementById("recipeBackdrop")) hideRecipeModal();
+}
+
+async function pasteRecipe(){
+  document.getElementById("pasteWarn").style.display = "none";
+  try{
+    if(!navigator.clipboard || !navigator.clipboard.readText){ document.getElementById("pasteWarn").style.display="block"; return; }
+    const txt = await navigator.clipboard.readText();
+    if(txt) document.getElementById("recipeTextInput").value = txt;
+  }catch{ document.getElementById("pasteWarn").style.display="block"; }
+}
+async function pasteUrl(){
+  document.getElementById("pasteWarn").style.display = "none";
+  try{
+    if(!navigator.clipboard || !navigator.clipboard.readText){ document.getElementById("pasteWarn").style.display="block"; return; }
+    const txt = await navigator.clipboard.readText();
+    if(txt) document.getElementById("recipeUrlInput").value = txt.trim();
+  }catch{ document.getElementById("pasteWarn").style.display="block"; }
+}
+function openRecipeLink(){
+  const url = (document.getElementById("recipeUrlInput").value || "").trim();
+  if(!url) return alert("אין קישור לפתיחה");
+  try{ window.open(new URL(url).toString(), "_blank"); }
+  catch{ alert("הקישור לא תקין"); }
+}
+
+function saveRecipe(){
+  if(!recipeDishName) return;
+  const text = document.getElementById("recipeTextInput").value || "";
+  const url = (document.getElementById("recipeUrlInput").value || "").trim();
+
+  // collect types
+  const selected = TYPES.filter(t => document.getElementById("rt_"+t)?.checked);
+  const types = selected.length ? selected : [...TYPES];
+
+  dishes = dishes.map(d => d.dish === recipeDishName ? ({...d, recipeText:text, recipeUrl:url, types}) : d);
+
+  saveAll();
+  hideRecipeModal();
+  renderAll();
+}
+
+/* =========================
+   Edit report modal
+   ========================= */
+let editId = null;
+
+function fillSelectWithDishes(sel, type){
+  const names = getDishesForType(type);
+  sel.innerHTML = "";
+  names.forEach(n => {
+    const o = document.createElement("option");
+    o.value = n; o.textContent = n;
+    sel.appendChild(o);
+  });
+}
+
+function openEditModal(id){
+  const r = logs.find(x => x.id === id);
+  if(!r) return;
+  editId = id;
+
+  document.getElementById("editDate").value = r.date || "";
+  document.getElementById("editType").value = r.type || "ערב";
+  document.getElementById("editSame").checked = !!r.same;
+
+  // build UI
+  buildEditKidsUI();
+  fillSelectWithDishes(document.getElementById("editMealSelect"), document.getElementById("editType").value);
+
+  toggleEditMode();
+
+  if(r.same){
+    document.getElementById("editMealSelect").value = r.meal || "";
+    const set = new Set(r.kids || []);
+    kids.forEach(k => {
+      const cb = document.getElementById("edit_cb_"+cssSafe(k));
+      if(cb) cb.checked = set.has(k);
+    });
+  } else {
+    const km = r.kidMeals || {};
+    kids.forEach(k => {
+      const use = document.getElementById("edit_use_"+cssSafe(k));
+      const sel = document.getElementById("edit_sel_"+cssSafe(k));
+      if(!use || !sel) return;
+      if(km[k]){
+        use.checked = true;
+        sel.disabled = false;
+        sel.value = km[k];
+      } else {
+        use.checked = false;
+        sel.disabled = true;
+      }
+    });
+  }
+
+  document.getElementById("editBackdrop").style.display = "flex";
+}
+
+function buildEditKidsUI(){
+  const checks = document.getElementById("editKidsChecks");
+  checks.innerHTML = "";
+  kids.forEach(k => {
+    const row = document.createElement("div");
+    row.className = "checkrow";
+    row.innerHTML = `<input type="checkbox" id="edit_cb_${cssSafe(k)}" checked><div style="font-weight:900;">${escapeHtml(k)}</div>`;
+    checks.appendChild(row);
+  });
+
+  const split = document.getElementById("editSplitKids");
+  split.innerHTML = "";
+  kids.forEach(k => {
+    const row = document.createElement("div");
+    row.className = "checkrow";
+    row.innerHTML = `
+      <input type="checkbox" id="edit_use_${cssSafe(k)}">
+      <div style="font-weight:900; min-width:90px;">${escapeHtml(k)}</div>
+      <select id="edit_sel_${cssSafe(k)}"></select>
+    `;
+    const sel = row.querySelector("select");
+    fillSelectWithDishes(sel, document.getElementById("editType").value);
+    sel.disabled = true;
+
+    const use = row.querySelector("input");
+    use.addEventListener("change", ()=>{ sel.disabled = !use.checked; });
+    split.appendChild(row);
+  });
+}
+
+function toggleEditMode(){
+  const same = document.getElementById("editSame").checked;
+  document.getElementById("editSameMode").style.display = same ? "block" : "none";
+  document.getElementById("editSplitMode").style.display = same ? "none" : "block";
+}
+
+document.getElementById("editType").addEventListener("change", ()=>{
+  // עדכון רשימות מנות לפי סוג חדש
+  fillSelectWithDishes(document.getElementById("editMealSelect"), document.getElementById("editType").value);
+  kids.forEach(k => {
+    const sel = document.getElementById("edit_sel_"+cssSafe(k));
+    if(sel) fillSelectWithDishes(sel, document.getElementById("editType").value);
+  });
+});
+
+function saveEditedReport(){
+  if(!editId) return;
+  const idx = logs.findIndex(x => x.id === editId);
+  if(idx === -1) return;
+
+  const date = document.getElementById("editDate").value;
+  const type = document.getElementById("editType").value;
+  if(!date) return alert("בחר תאריך");
+
+  const updated = {...logs[idx], date, type};
+
+  if(document.getElementById("editSame").checked){
+    const meal = document.getElementById("editMealSelect").value;
+    const selectedKids = kids.filter(k => document.getElementById("edit_cb_"+cssSafe(k))?.checked);
+    if(!meal) return alert("בחר מנה");
+    if(!selectedKids.length) return alert("סמן לפחות ילד/ה אחד/ת");
+    updated.same = true;
+    updated.meal = meal;
+    updated.kids = selectedKids;
+    delete updated.kidMeals;
+  } else {
+    const km = {};
+    let any = false;
+    kids.forEach(k => {
+      const use = document.getElementById("edit_use_"+cssSafe(k));
+      const sel = document.getElementById("edit_sel_"+cssSafe(k));
+      if(use && use.checked){
+        any = true;
+        km[k] = sel.value;
+      }
+    });
+    if(!any) return alert("במצב מפוצל חייב לבחור לפחות ילד אחד");
+    updated.same = false;
+    updated.kidMeals = km;
+    delete updated.meal;
+    delete updated.kids;
+  }
+
+  logs[idx] = updated;
+  saveAll();
+  hideEditModal();
+  renderAll();
+}
+
+function hideEditModal(){
+  document.getElementById("editBackdrop").style.display = "none";
+  editId = null;
+}
+function closeEditModal(e){
+  if(e.target === document.getElementById("editBackdrop")) hideEditModal();
+}
+
+/* =========================
+   Utilities
+   ========================= */
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, (m)=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[m]));
+}
+function cssSafe(s){
+  // ל-IDs (פשוט)
+  return String(s).replace(/[^a-zA-Z0-9_\u0590-\u05FF]/g, "_");
+}
+
+/* =========================
+   Render all
+   ========================= */
+function renderAll(){
+  renderKids();
+  renderDishes();
+  renderLogSelectors();
+  toggleMode();
+  renderData();
+}
+
+/* =========================
+   Init
+   ========================= */
+document.getElementById("dateInput").value = todayISO();
+document.getElementById("weekEndDate").value = todayISO();
+
+saveAll();
 renderAll();
+syncLoad();
 </script>
 </body>
 </html>
