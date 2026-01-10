@@ -1,4 +1,5 @@
-const CACHE = "kids-meals-cache";
+// שינוי גרסה כאן מכריח עדכון (תגדיל כשצריך)
+const CACHE = "kids-meals-cache-v2";
 
 const CORE = [
   "./",
@@ -16,9 +17,13 @@ self.addEventListener("install", (event) => {
   );
 });
 
-// מפעיל את ה-SW מיד
+// מפעיל את ה-SW מיד + מוחק קאש ישן
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.map((k) => (k !== CACHE ? caches.delete(k) : null)));
+    await self.clients.claim();
+  })());
 });
 
 // אסטרטגיה:
@@ -28,7 +33,6 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // רק לאותו origin
   if (url.origin !== location.origin) return;
 
   // Network-first ל-index.html
