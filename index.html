@@ -31,7 +31,6 @@
       border-radius:var(--radius); box-shadow:var(--shadow);
       padding:14px; margin-bottom:14px;
     }
-
     .field{margin-top:10px}
 
     input,select,textarea{
@@ -42,10 +41,9 @@
     textarea{min-height:150px; resize:vertical}
 
     .inline{
-      display:flex; gap:10px; align-items:center; flex-wrap:nowrap;
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
     }
-    .inline input{flex:1}
-    .inline button{flex:0 0 auto}
+    .inline input{flex:1; min-width:180px}
 
     .btn{
       padding:10px 14px; border-radius:10px; border:none;
@@ -58,8 +56,7 @@
     .iconbtn{
       background:#f3f4f6; color:#111827;
       padding:8px 10px; border-radius:10px; border:1px solid var(--border);
-      font-weight:800;
-      line-height:1;
+      font-weight:800; line-height:1;
     }
     .iconbtn.dangerish{
       background:#f3f4f6; color:#111827; border:1px solid var(--border);
@@ -75,34 +72,20 @@
     li span{flex:1}
     .btn-group{display:flex; gap:8px; align-items:center}
 
-    /* כפתור חיצוני (ילדים/היסטוריה) */
+    /* ילדים: כפתור חיצוני */
     .listrow{
-      display:flex;
-      gap:10px;
-      align-items:stretch;
-      margin-bottom:8px;
+      display:flex; gap:10px; align-items:stretch; margin-bottom:8px;
     }
     .box{
-      flex:1;
-      background:#fff;
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:10px;
-      display:flex;
-      align-items:center;
+      flex:1; background:#fff; border:1px solid var(--border);
+      border-radius:12px; padding:10px; display:flex; align-items:center;
       min-height:44px;
     }
-    .btncol{
-      flex:0 0 auto;
-      display:flex;
-      align-items:stretch;
-    }
+    .btncol{flex:0 0 auto; display:flex; align-items:stretch;}
     .btncol .btn{height:100%}
 
     /* צ'קבוקסים */
-    .checks{
-      display:flex; flex-direction:column; gap:10px; margin-top:8px;
-    }
+    .checks{display:flex; flex-direction:column; gap:10px; margin-top:8px;}
     .checkrow{
       display:flex; align-items:center; gap:10px;
       padding:10px; border:1px solid var(--border);
@@ -111,71 +94,93 @@
     .checkrow input{width:18px; height:18px; margin:0}
     .note{font-size:13px;color:var(--muted);margin-top:6px}
 
-    /* ===== Tabs ===== */
-    .tabs{
-      display:flex; gap:8px;
-      margin-bottom:14px;
-      flex-wrap:wrap;
-    }
+    /* Tabs */
+    .tabs{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
     .tabbtn{
-      border:1px solid var(--border);
-      background:#fff;
-      border-radius:999px;
-      padding:9px 12px;
-      font-weight:900;
-      cursor:pointer;
+      border:1px solid var(--border); background:#fff;
+      border-radius:999px; padding:9px 12px; font-weight:900; cursor:pointer;
     }
-    .tabbtn.active{
-      background:var(--primary);
-      color:#fff;
-      border-color:var(--primary);
-    }
+    .tabbtn.active{background:var(--primary); color:#fff; border-color:var(--primary);}
     .view{display:none}
     .view.active{display:block}
 
-    /* ===== Modal ===== */
-    .modal-backdrop{
-      position:fixed; inset:0;
-      background:rgba(0,0,0,0.35);
-      display:none;
+    /* ===== Rows for history/week ===== */
+    .rowwrap{margin-top:10px}
+    .mealrow{
+      display:flex;
+      gap:10px;
       align-items:center;
-      justify-content:center;
-      padding:14px;
-      z-index:9999;
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:14px;
+      padding:10px;
+      margin-bottom:8px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:6px 10px;
+      font-weight:900;
+      white-space:nowrap;
+      font-size:13px;
+    }
+    .datepill{background:#f3f4f6}
+    .typepill{border:none}
+
+    .type-boker{background:#fff7ed}     /* כתמתם עדין */
+    .type-tzohor{background:#ecfeff}    /* טורקיז עדין */
+    .type-erev{background:#eef2ff}      /* כחול עדין */
+    .type-bein{background:#fdf2f8}      /* ורוד עדין */
+
+    .mealname{
+      font-weight:900;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      flex:1;
+      min-width:80px;
+    }
+    .kidstxt{
+      color:#374151;
+      font-weight:800;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:42%;
+    }
+    .delbtn{
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:12px;
+      padding:8px 10px;
+      cursor:pointer;
+      font-weight:900;
+      white-space:nowrap;
+    }
+
+    /* Modal */
+    .modal-backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,0.35);
+      display:none; align-items:center; justify-content:center;
+      padding:14px; z-index:9999;
     }
     .modal{
-      width:100%;
-      max-width:720px;
-      background:#fff;
-      border:1px solid var(--border);
-      border-radius:16px;
+      width:100%; max-width:720px; background:#fff;
+      border:1px solid var(--border); border-radius:16px;
       box-shadow:0 16px 50px rgba(0,0,0,0.2);
       padding:14px;
     }
     .modal-header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:10px;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px; margin-bottom:10px;
     }
-    .modal-title{
-      font-weight:900;
-      font-size:18px;
-    }
-    .modal-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
+    .modal-title{font-weight:900; font-size:18px;}
+    .modal-actions{display:flex; gap:10px; flex-wrap:wrap;}
     .tiny{
-      padding:8px 10px;
-      border-radius:10px;
-      border:1px solid var(--border);
-      background:#f3f4f6;
-      font-weight:800;
-      cursor:pointer;
-      white-space:nowrap;
+      padding:8px 10px; border-radius:10px; border:1px solid var(--border);
+      background:#f3f4f6; font-weight:800; cursor:pointer; white-space:nowrap;
     }
     .warn{color:var(--danger); font-size:13px; margin-top:8px; display:none;}
 
@@ -188,7 +193,6 @@
 <body>
 <h1>🍽️ ארוחות הילדים</h1>
 
-<!-- Tabs (במקום "איפוס נתונים") -->
 <div class="tabs">
   <button class="tabbtn active" type="button" onclick="showTab('log')">רישום</button>
   <button class="tabbtn" type="button" onclick="showTab('kids')">ניהול ילדים</button>
@@ -196,7 +200,7 @@
   <button class="tabbtn" type="button" onclick="showTab('data')">נתונים</button>
 </div>
 
-<!-- ===== TAB: רישום ===== -->
+<!-- TAB: רישום -->
 <section id="view-log" class="view active">
   <section class="card">
     <h2>רישום ארוחה</h2>
@@ -223,7 +227,6 @@
       </div>
     </div>
 
-    <!-- מצב משותף -->
     <div id="sameMode">
       <div class="field">
         <label>מנה</label>
@@ -237,7 +240,6 @@
       <div id="sameKids" class="checks"></div>
     </div>
 
-    <!-- מצב פיצול -->
     <div id="splitMode" style="display:none;">
       <h3>בחירה נפרדת לכל ילד</h3>
       <div id="splitKids" class="checks"></div>
@@ -249,7 +251,7 @@
   </section>
 </section>
 
-<!-- ===== TAB: ניהול ילדים ===== -->
+<!-- TAB: ילדים -->
 <section id="view-kids" class="view">
   <section class="card">
     <h2>ניהול ילדים</h2>
@@ -261,7 +263,7 @@
   </section>
 </section>
 
-<!-- ===== TAB: ניהול מנות ===== -->
+<!-- TAB: מנות -->
 <section id="view-dishes" class="view">
   <section class="card">
     <h2>ניהול מנות</h2>
@@ -274,20 +276,27 @@
   </section>
 </section>
 
-<!-- ===== TAB: נתונים ===== -->
+<!-- TAB: נתונים -->
 <section id="view-data" class="view">
   <section class="card">
     <h2>היסטוריה</h2>
-    <ul id="mealList"></ul>
+    <div class="note">החדש למעלה. כל שורה: תאריך | סוג | מנה | ילדים</div>
+    <div id="historyWrap" class="rowwrap"></div>
   </section>
 
   <section class="card">
     <h2>שבוע אחרון</h2>
     <input type="date" id="weekEndDate">
-    <ul id="weekList"></ul>
+    <div id="weekWrap" class="rowwrap"></div>
 
     <h3>גיוון</h3>
     <ul id="varietyList"></ul>
+  </section>
+
+  <section class="card">
+    <h2>כלי בדיקה מהיר</h2>
+    <div class="note">מוחק רק את ההיסטוריה (רישומי ארוחות). לא מוחק ילדים/מנות/מתכונים.</div>
+    <button class="btn danger" type="button" onclick="clearHistoryOnly()">מחק היסטוריה</button>
   </section>
 
   <section class="card">
@@ -297,7 +306,7 @@
   </section>
 </section>
 
-<!-- ===== Recipe Modal ===== -->
+<!-- Recipe Modal -->
 <div id="recipeBackdrop" class="modal-backdrop" onclick="closeRecipeModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-header">
@@ -329,29 +338,20 @@
 </div>
 
 <script>
-  // ===== TABS =====
+  // ===== Tabs =====
   function showTab(key){
     document.querySelectorAll(".tabbtn").forEach(b => b.classList.remove("active"));
     document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
-
-    const map = {
-      log: {btn:0, view:"view-log"},
-      kids:{btn:1, view:"view-kids"},
-      dishes:{btn:2, view:"view-dishes"},
-      data:{btn:3, view:"view-data"}
-    };
+    const map = { log:[0,"view-log"], kids:[1,"view-kids"], dishes:[2,"view-dishes"], data:[3,"view-data"] };
     const m = map[key] || map.log;
-    document.querySelectorAll(".tabbtn")[m.btn].classList.add("active");
-    document.getElementById(m.view).classList.add("active");
+    document.querySelectorAll(".tabbtn")[m[0]].classList.add("active");
+    document.getElementById(m[1]).classList.add("active");
   }
 
-  // ===== DATA =====
+  // ===== Data =====
   const KM="meals", KK="kids", KO="mealOptions";
-
   let meals = JSON.parse(localStorage.getItem(KM)) || [];
   let kids = JSON.parse(localStorage.getItem(KK)) || ["מיקה","עומר"];
-
-  // mealOptions: array of objects {dish, recipeText, recipeUrl}
   let mealOptionsRaw = JSON.parse(localStorage.getItem(KO));
   let mealOptions = normalizeMealOptions(mealOptionsRaw);
 
@@ -378,7 +378,9 @@
 
   const uid = () => "m_" + Math.random().toString(16).slice(2) + "_" + Date.now();
 
-  // ===== HELPERS =====
+  function getDishNames(){ return mealOptions.map(o => o.dish); }
+  function findOptionByDish(dish){ return mealOptions.find(o => o.dish === dish) || null; }
+
   const iso = (d) => new Date(d + "T00:00:00");
   const addDays = (d, n) => {
     const x = iso(d);
@@ -392,14 +394,14 @@
     location.reload();
   }
 
-  function getDishNames(){
-    return mealOptions.map(o => o.dish);
-  }
-  function findOptionByDish(dish){
-    return mealOptions.find(o => o.dish === dish) || null;
+  function clearHistoryOnly(){
+    if(!confirm("למחוק את כל ההיסטוריה? (ילדים/מנות/מתכונים לא יימחקו)")) return;
+    meals = [];
+    save();
+    renderAll();
   }
 
-  // ===== KIDS =====
+  // ===== Kids =====
   function addKid(){
     const v = (newKidInput.value || "").trim();
     if(!v) return;
@@ -429,7 +431,7 @@
     save(); renderAll();
   }
 
-  // ===== MEAL OPTIONS =====
+  // ===== Meal options =====
   function addMeal(){
     const v = (newMealInput.value || "").trim();
     if(!v) return;
@@ -466,28 +468,28 @@
     save(); renderAll();
   }
 
-  // ===== UI MODE =====
+  // ===== Log (save meal) =====
   function toggleMode(){
     const same = sameForAll.checked;
     sameMode.style.display = same ? "block" : "none";
     splitMode.style.display = same ? "none" : "block";
   }
 
-  // ===== SAVE MEAL =====
   function saveMeal(){
     const date = dateInput.value;
     const type = mealType.value;
-
     if(!date) return alert("בחר תאריך");
     if(!mealOptions.length) return alert("המאגר ריק — הוסף מנה קודם");
     if(!kids.length) return alert("אין ילדים — הוסף ילד/ה קודם");
+
+    const createdAt = Date.now(); // נסתר, רק למיון
 
     if(sameForAll.checked){
       const meal = mealSelect.value;
       const selectedKids = kids.filter(k => document.getElementById("cb_"+k)?.checked);
       if(!meal) return alert("בחר מנה");
       if(!selectedKids.length) return alert("סמן לפחות ילד/ה אחד/ת");
-      meals.push({id: uid(), date, type, meal, kids: selectedKids});
+      meals.push({id: uid(), createdAt, date, type, meal, kids: selectedKids});
     } else {
       const kidMeals = {};
       for(const k of kids){
@@ -496,7 +498,7 @@
         if(!val) return alert(`בחר מנה עבור ${k}`);
         kidMeals[k] = val;
       }
-      meals.push({id: uid(), date, type, split: true, kidMeals});
+      meals.push({id: uid(), createdAt, date, type, split: true, kidMeals});
     }
 
     save(); renderAll();
@@ -508,10 +510,9 @@
     save(); renderAll();
   }
 
-  // ===== SUGGEST =====
+  // ===== Suggest =====
   function suggestMeal(){
     if(!mealOptions.length) return;
-
     const end = weekEndDate.value || dateInput.value;
     const start = addDays(end, -6);
     const week = meals.filter(m => m.date >= start && m.date <= end);
@@ -532,7 +533,7 @@
     mealSelect.value = pick;
   }
 
-  // ===== Recipe Modal =====
+  // ===== Recipe modal =====
   let recipeDish = null;
 
   function openRecipeModal(dish){
@@ -549,7 +550,6 @@
     recipeBackdrop.style.display = "none";
     recipeDish = null;
   }
-
   function closeRecipeModal(e){
     if(e.target === recipeBackdrop) hideRecipeModal();
   }
@@ -557,58 +557,102 @@
   async function pasteRecipe(){
     pasteWarn.style.display = "none";
     try{
-      if(!navigator.clipboard || !navigator.clipboard.readText){
-        pasteWarn.style.display = "block";
-        return;
-      }
+      if(!navigator.clipboard || !navigator.clipboard.readText){ pasteWarn.style.display="block"; return; }
       const txt = await navigator.clipboard.readText();
       if(txt) recipeTextInput.value = txt;
-    }catch(err){
-      pasteWarn.style.display = "block";
-    }
+    }catch(e){ pasteWarn.style.display="block"; }
   }
-
   async function pasteUrl(){
     pasteWarn.style.display = "none";
     try{
-      if(!navigator.clipboard || !navigator.clipboard.readText){
-        pasteWarn.style.display = "block";
-        return;
-      }
+      if(!navigator.clipboard || !navigator.clipboard.readText){ pasteWarn.style.display="block"; return; }
       const txt = await navigator.clipboard.readText();
       if(txt) recipeUrlInput.value = txt.trim();
-    }catch(err){
-      pasteWarn.style.display = "block";
-    }
+    }catch(e){ pasteWarn.style.display="block"; }
   }
-
   function openRecipeLink(){
     const url = (recipeUrlInput.value || "").trim();
     if(!url) return alert("אין קישור לפתיחה");
-    try{
-      const u = new URL(url);
-      window.open(u.toString(), "_blank");
-    }catch(e){
-      alert("הקישור לא תקין");
-    }
+    try{ window.open(new URL(url).toString(), "_blank"); }
+    catch(e){ alert("הקישור לא תקין"); }
   }
-
   function saveRecipe(){
     if(!recipeDish) return;
     const text = recipeTextInput.value || "";
     const url = (recipeUrlInput.value || "").trim();
-
-    mealOptions = mealOptions.map(o => {
-      if(o.dish !== recipeDish) return o;
-      return {...o, recipeText: text, recipeUrl: url};
-    });
-
-    save();
-    hideRecipeModal();
-    renderMealOptionsManager();
+    mealOptions = mealOptions.map(o => o.dish !== recipeDish ? o : ({...o, recipeText:text, recipeUrl:url}));
+    save(); hideRecipeModal(); renderMealOptionsManager();
   }
 
-  // ===== RENDER =====
+  // ===== Render helpers for new rows =====
+  function typeClass(type){
+    if(type === "בוקר") return "type-boker";
+    if(type === "צהריים") return "type-tzohor";
+    if(type === "ערב") return "type-erev";
+    return "type-bein";
+  }
+
+  function rowTextKids(m){
+    if(m.split){
+      return Object.entries(m.kidMeals||{}).map(([k,v]) => `${k}: ${v}`).join(" | ");
+    }
+    return (m.kids||[]).join(", ");
+  }
+
+  function rowMealName(m){
+    if(m.split) return "ארוחה מפוצלת";
+    return m.meal || "";
+  }
+
+  function sortMealsNewestFirst(arr){
+    return [...arr].sort((a,b) => {
+      // date desc
+      const ad = (a.date || "");
+      const bd = (b.date || "");
+      if(ad !== bd) return bd.localeCompare(ad);
+      // createdAt desc (fallback: extract from id end)
+      const ac = Number(a.createdAt || (String(a.id||"").split("_").pop())) || 0;
+      const bc = Number(b.createdAt || (String(b.id||"").split("_").pop())) || 0;
+      return bc - ac;
+    });
+  }
+
+  function createMealRow(m){
+    const wrap = document.createElement("div");
+    wrap.className = "mealrow";
+
+    const dateP = document.createElement("span");
+    dateP.className = "pill datepill";
+    dateP.textContent = m.date || "";
+
+    const typeP = document.createElement("span");
+    typeP.className = "pill typepill " + typeClass(m.type);
+    typeP.textContent = m.type || "";
+
+    const mealName = document.createElement("div");
+    mealName.className = "mealname";
+    mealName.textContent = rowMealName(m);
+
+    const kidsTxt = document.createElement("div");
+    kidsTxt.className = "kidstxt";
+    kidsTxt.textContent = rowTextKids(m);
+
+    const del = document.createElement("button");
+    del.className = "delbtn";
+    del.type = "button";
+    del.textContent = "מחק";
+    del.onclick = () => deleteReport(m.id);
+
+    wrap.appendChild(dateP);
+    wrap.appendChild(typeP);
+    wrap.appendChild(mealName);
+    wrap.appendChild(kidsTxt);
+    wrap.appendChild(del);
+
+    return wrap;
+  }
+
+  // ===== Render =====
   function renderKids(){
     kidsList.innerHTML = "";
     kids.forEach(k => {
@@ -683,54 +727,36 @@
     });
   }
 
-  function renderHistory(){
-    mealList.innerHTML = "";
-    meals.forEach(m => {
-      let text = "";
-      if(m.split){
-        const parts = Object.entries(m.kidMeals||{}).map(([k,v])=>`${k}: ${v}`).join(" | ");
-        text = `${m.date} | ${m.type} | ${parts}`;
-      } else {
-        text = `${m.date} | ${m.type} | ${m.meal} | ${(m.kids||[]).join(", ")}`;
-      }
-
-      const row = document.createElement("div");
-      row.className = "listrow";
-      row.innerHTML = `
-        <div class="box">${text}</div>
-        <div class="btncol"><button class="btn danger" type="button">מחק</button></div>
-      `;
-      row.querySelector("button").onclick = () => deleteReport(m.id);
-      mealList.appendChild(row);
-    });
-  }
-
-  function renderWeekAndVariety(){
-    const end = weekEndDate.value || dateInput.value;
-    const start = addDays(end, -6);
-    const week = meals
-      .filter(m => m.date >= start && m.date <= end)
-      .sort((a,b)=>a.date.localeCompare(b.date));
-
-    weekList.innerHTML = "";
-    if(!week.length){
-      const li = document.createElement("li");
-      li.innerHTML = `<span>אין רישומים בשבוע הזה</span>`;
-      weekList.appendChild(li);
+  function renderHistoryAndWeek(){
+    // History: all meals sorted newest first
+    historyWrap.innerHTML = "";
+    const sortedAll = sortMealsNewestFirst(meals);
+    if(!sortedAll.length){
+      const empty = document.createElement("div");
+      empty.className = "note";
+      empty.textContent = "אין עדיין רישומים.";
+      historyWrap.appendChild(empty);
     } else {
-      week.forEach(m => {
-        const li = document.createElement("li");
-        let text = "";
-        if(m.split){
-          text = `${m.date} | ${m.type} | ` + Object.entries(m.kidMeals||{}).map(([k,v])=>`${k}: ${v}`).join(" | ");
-        } else {
-          text = `${m.date} | ${m.type} | ${m.meal} | ${(m.kids||[]).join(", ")}`;
-        }
-        li.innerHTML = `<span>${text}</span>`;
-        weekList.appendChild(li);
-      });
+      sortedAll.forEach(m => historyWrap.appendChild(createMealRow(m)));
     }
 
+    // Week
+    const end = weekEndDate.value || dateInput.value;
+    const start = addDays(end, -6);
+    const week = meals.filter(m => m.date >= start && m.date <= end);
+    const sortedWeek = sortMealsNewestFirst(week);
+
+    weekWrap.innerHTML = "";
+    if(!sortedWeek.length){
+      const emptyW = document.createElement("div");
+      emptyW.className = "note";
+      emptyW.textContent = "אין רישומים בשבוע הזה.";
+      weekWrap.appendChild(emptyW);
+    } else {
+      sortedWeek.forEach(m => weekWrap.appendChild(createMealRow(m)));
+    }
+
+    // Variety (based on week)
     const counts = new Map();
     week.forEach(m => {
       if(m.split){
@@ -760,11 +786,10 @@
     renderMealOptionsManager();
     renderSelectorsAndChecks();
     toggleMode();
-    renderHistory();
-    renderWeekAndVariety();
+    renderHistoryAndWeek();
   }
 
-  // ===== INIT =====
+  // ===== Init =====
   const today = new Date().toISOString().slice(0,10);
   dateInput.value = today;
   weekEndDate.value = today;
