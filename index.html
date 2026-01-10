@@ -23,40 +23,62 @@
     <select id="mealType">
       <option value="בוקר">בוקר</option>
       <option value="צהריים">צהריים</option>
-      <option value="ערב">ערב</option>
+      <option value="ערב" selected>ערב</option>
       <option value="ביניים">ביניים</option>
     </select>
   </label>
   <br><br>
 
   <label>
-    מנה:
+    מנה (במצב "אותה ארוחה לשתיהן"):
     <select id="mealSelect"></select>
   </label>
   <br><br>
 
   <label>
-    הוסף מנה חדשה:
+    הוסף מנה חדשה למאגר:
     <input type="text" id="newMealInput" placeholder="לדוגמה: פסטה">
-    <button onclick="addMeal()">הוסף</button>
+    <button type="button" onclick="addMeal()">הוסף</button>
   </label>
   <br><br>
 
   <strong>מי אכל?</strong><br>
-  <label><input type="checkbox" id="mika"> מיקה</label><br>
-  <label><input type="checkbox" id="omer"> עומר</label><br><br>
 
-  <button onclick="saveMeal()">שמירה</button>
+  <label>
+    <input type="checkbox" id="sameForBoth" checked onchange="toggleMode()">
+    ברירת מחדל: אותה ארוחה לשתיהן
+  </label>
+  <br><br>
+
+  <div id="sameMode">
+    <label><input type="checkbox" id="mika" checked> מיקה</label><br>
+    <label><input type="checkbox" id="omer" checked> עומר</label><br><br>
+  </div>
+
+  <div id="splitMode" style="display:none;">
+    <label>מיקה אכלה:
+      <select id="mealSelectMika"></select>
+    </label>
+    <br><br>
+
+    <label>עומר אכלה:
+      <select id="mealSelectOmer"></select>
+    </label>
+    <br><br>
+  </div>
+
+  <button type="button" onclick="saveMeal()">שמירה</button>
 </section>
 
 <hr>
 
 <section>
-  <h2>מה אכלו היום</h2>
+  <h2>היסטוריה</h2>
   <ul id="mealList"></ul>
 </section>
 
 <script>
+  // ===== Data =====
   let meals = JSON.parse(localStorage.getItem("meals")) || [];
   let mealOptions = JSON.parse(localStorage.getItem("mealOptions")) || [];
 
@@ -65,6 +87,58 @@
     localStorage.setItem("mealOptions", JSON.stringify(mealOptions));
   }
 
+  // ===== UI helpers =====
+  function todayISO() {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function toggleMode() {
+    const same = document.getElementById("sameForBoth").checked;
+    document.getElementById("sameMode").style.display = same ? "block" : "none";
+    document.getElementById("splitMode").style.display = same ? "none" : "block";
+  }
+
+  function renderMealOptions() {
+    const select = document.getElementById("mealSelect");
+    const selectMika = document.getElementById("mealSelectMika");
+    const selectOmer = document.getElementById("mealSelectOmer");
+
+    function fill(sel) {
+      if (!sel) return;
+      sel.innerHTML = "";
+      mealOptions.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m;
+        sel.appendChild(opt);
+      });
+    }
+
+    fill(select);
+    fill(selectMika);
+    fill(selectOmer);
+  }
+
+  function renderMeals() {
+    const list = document.getElementById("mealList");
+    list.innerHTML = "";
+
+    meals.forEach(m => {
+      const li = document.createElement("li");
+      if (m.split) {
+        li.textContent = `${m.date} | ${m.type} | מיקה: ${m.mikaMeal} | עומר: ${m.omerMeal}`;
+      } else {
+        li.textContent = `${m.date} | ${m.type} | ${m.meal} | ${m.kids.join(", ")}`;
+      }
+      list.appendChild(li);
+    });
+  }
+
+  // ===== Actions =====
   function addMeal() {
     const input = document.getElementById("newMealInput");
     const value = input.value.trim();
@@ -78,46 +152,52 @@
     input.value = "";
   }
 
-  function renderMealOptions() {
-    const select = document.getElementById("mealSelect");
-    select.innerHTML = "";
-    mealOptions.forEach(m => {
-      const opt = document.createElement("option");
-      opt.value = m;
-      opt.textContent = m;
-      select.appendChild(opt);
-    });
-  }
-
   function saveMeal() {
     const date = document.getElementById("dateInput").value;
     const type = document.getElementById("mealType").value;
-    const meal = document.getElementById("mealSelect").value;
-    const kids = [];
 
-    if (document.getElementById("mika").checked) kids.push("מיקה");
-    if (document.getElementById("omer").checked) kids.push("עומר");
-
-    if (!date || !meal || kids.length === 0) {
-      alert("נא למלא תאריך, לבחור מנה ולבחור לפחות ילד אחד");
+    if (!date) {
+      alert("נא למלא תאריך");
       return;
     }
 
-    meals.push({ date, type, meal, kids });
+    const sameForBoth = document.getElementById("sameForBoth").checked;
+
+    if (sameForBoth) {
+      const meal = document.getElementById("mealSelect").value;
+
+      const kids = [];
+      if (document.getElementById("mika").checked) kids.push("מיקה");
+      if (document.getElementById("omer").checked) kids.push("עומר");
+
+      if (!meal || kids.length === 0) {
+        alert("נא לבחור מנה ולסמן לפחות ילדה אחת");
+        return;
+      }
+
+      meals.push({ date, type, meal, kids });
+      saveData();
+      renderMeals();
+      return;
+    }
+
+    // split mode
+    const mealMika = document.getElementById("mealSelectMika").value;
+    const mealOmer = document.getElementById("mealSelectOmer").value;
+
+    if (!mealMika || !mealOmer) {
+      alert("נא לבחור מנה למיקה וגם לעומר");
+      return;
+    }
+
+    meals.push({ date, type, split: true, mikaMeal: mealMika, omerMeal: mealOmer });
     saveData();
     renderMeals();
   }
 
-  function renderMeals() {
-    const list = document.getElementById("mealList");
-    list.innerHTML = "";
-    meals.forEach(m => {
-      const li = document.createElement("li");
-      li.textContent = `${m.date} | ${m.type} | ${m.meal} | ${m.kids.join(", ")}`;
-      list.appendChild(li);
-    });
-  }
-
+  // ===== Init =====
+  document.getElementById("dateInput").value = todayISO();
+  toggleMode();
   renderMealOptions();
   renderMeals();
 </script>
