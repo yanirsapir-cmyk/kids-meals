@@ -1,3 +1,10 @@
+// כיבוי Service Worker בספארי (iOS)
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+if (isIOS && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(r => r.unregister());
+  });
+}
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
