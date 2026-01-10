@@ -70,7 +70,6 @@
     li span{flex:1}
     .btn-group{display:flex; gap:8px; align-items:center}
 
-    /* Tabs */
     .tabs{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
     .tabbtn{
       border:1px solid var(--border); background:#fff;
@@ -80,7 +79,6 @@
     .view{display:none}
     .view.active{display:block}
 
-    /* ילדים */
     .listrow{display:flex;gap:10px;align-items:stretch;margin-bottom:8px;}
     .box{
       flex:1;background:#fff;border:1px solid var(--border);
@@ -89,7 +87,6 @@
     .btncol{flex:0 0 auto;display:flex;align-items:stretch;}
     .btncol .btn{height:100%}
 
-    /* צ'קבוקסים */
     .checks{display:flex; flex-direction:column; gap:10px; margin-top:8px;}
     .checkrow{
       display:flex; align-items:center; gap:10px;
@@ -99,7 +96,6 @@
     .checkrow input{width:18px; height:18px; margin:0}
     .note{font-size:13px;color:var(--muted);margin-top:6px}
 
-    /* Filters */
     .filters{
       display:flex; gap:8px; flex-wrap:nowrap; overflow-x:auto;
       -webkit-overflow-scrolling: touch;
@@ -114,7 +110,6 @@
     }
     .filter input{width:16px;height:16px;margin:0}
 
-    /* Grouped-by-date */
     .daycard{
       border:1px solid var(--border);
       background:#fff;
@@ -148,7 +143,6 @@
     .type-erev{background:#eef2ff}
     .type-bein{background:#fdf2f8}
 
-    /* Entry compact */
     .entry{
       border:1px solid var(--border);
       border-radius:14px;
@@ -214,7 +208,6 @@
       text-align:left; flex:1;
     }
 
-    /* Modal */
     .modal-backdrop{
       position:fixed; inset:0;
       background:rgba(0,0,0,0.35);
@@ -486,6 +479,68 @@
     document.getElementById(m[1]).classList.add("active");
   }
 
+  /* ===== Google Sync ===== */
+  const SYNC_URL = "https://script.google.com/macros/s/AKfycby8gDkzATtKwGFqFguvvTcqZ0jC1FCADAFWw1PLoOzVAmV1UwuZiIPkC1YNhmD_4pi4/exec";
+  const SYNC_TOKEN = "CHANGE_ME_12345";
+  const DEVICE_NAME = "Yanir"; // אצל אשתך תשנו ל-"Partner"
+
+  function localHasAnyData(){
+    try{
+      const meals = JSON.parse(localStorage.getItem("meals") || "[]");
+      const kids = JSON.parse(localStorage.getItem("kids") || "[]");
+      const opts = JSON.parse(localStorage.getItem("mealOptions") || "[]");
+      return (meals.length > 0) || (kids.length > 0) || (opts.length > 0);
+    } catch { return false; }
+  }
+
+  async function syncLoad() {
+    try {
+      // כלל "יאניר מנצח": במכשיר שלך אנחנו לא דורסים נתונים קיימים מהרשת.
+      if (DEVICE_NAME === "Yanir" && localHasAnyData()) return;
+
+      const res = await fetch(`${SYNC_URL}?token=${encodeURIComponent(SYNC_TOKEN)}`);
+      const json = await res.json();
+      if (!json.ok || !json.data) return;
+
+      const remote = JSON.parse(json.data);
+
+      localStorage.setItem("meals", JSON.stringify(remote.meals || []));
+      localStorage.setItem("kids", JSON.stringify(remote.kids || []));
+      localStorage.setItem("mealOptions", JSON.stringify(remote.mealOptions || []));
+
+      location.reload();
+    } catch (e) {
+      console.warn("syncLoad failed", e);
+    }
+  }
+
+  let syncTimer = null;
+  async function syncSave() {
+    try {
+      // דיבאונס כדי לא להציף בקשות
+      if (syncTimer) clearTimeout(syncTimer);
+      syncTimer = setTimeout(async () => {
+        const payload = {
+          meals: JSON.parse(localStorage.getItem("meals") || "[]"),
+          kids: JSON.parse(localStorage.getItem("kids") || "[]"),
+          mealOptions: JSON.parse(localStorage.getItem("mealOptions") || "[]")
+        };
+
+        await fetch(SYNC_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            token: SYNC_TOKEN,
+            updatedBy: DEVICE_NAME,
+            data: JSON.stringify(payload)
+          })
+        });
+      }, 400);
+    } catch (e) {
+      console.warn("syncSave failed", e);
+    }
+  }
+
   // ===== Constants / Helpers =====
   const KM="meals", KK="kids", KO="mealOptions";
   const DAY = 24*60*60*1000;
@@ -527,6 +582,7 @@
     localStorage.setItem(KM, JSON.stringify(meals));
     localStorage.setItem(KK, JSON.stringify(kids));
     localStorage.setItem(KO, JSON.stringify(mealOptions));
+    syncSave();
   }
 
   function getDishNames(){ return mealOptions.map(o => o.dish); }
@@ -536,6 +592,7 @@
   function resetData(){
     if(!confirm("איפוס מוחלט?")) return;
     localStorage.clear();
+    syncSave();
     location.reload();
   }
   function clearHistoryOnly(){
@@ -823,7 +880,7 @@
       const meal = editMealSelect.value;
       const selectedKids = kids.filter(k => document.getElementById("edit_cb_"+k)?.checked);
       if(!meal) return alert("בחר מנה");
-      if(!selectedKids.length) return alert("סמן לפחות ילד/ה אחד/ת");
+      if(!selectedKids.length) return alert("סמן לפחות ילד לפחות ילד/ה אחד/ת");
 
       updated.split = false;
       delete updated.kidMeals;
@@ -1247,6 +1304,7 @@
 
   save();
   renderAll();
+  syncLoad();
 </script>
 </body>
 </html>
