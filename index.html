@@ -157,11 +157,11 @@
     .type-erev{background:#eef2ff}
     .type-bein{background:#fdf2f8}
 
-    /* ===== Entry row: 2 lines ===== */
+    /* ===== Entry row (קומפקטי יותר) ===== */
     .entry{
       border:1px solid var(--border);
       border-radius:14px;
-      padding:10px;
+      padding:8px;               /* היה 10 */
       margin-bottom:8px;
       background:#fff;
     }
@@ -169,16 +169,31 @@
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:10px;
-      margin-bottom:8px;
+      gap:8px;
+      margin-bottom:6px;         /* היה 8 */
     }
     .entry-bottom{
+      font-size:13px;
+      font-weight:900;
+    }
+
+    .delbtn{
+      min-width:62px;            /* קצת צר יותר */
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:12px;
+      padding:6px 10px;          /* נמוך יותר */
+      cursor:pointer;
+      font-weight:900;
+      white-space:nowrap;
+    }
+
+    /* מצב רגיל: מנה מימין, ילדים משמאל */
+    .bottom-normal{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
       gap:10px;
-      font-size:13px;
-      font-weight:900;
     }
     .mealtext{
       flex:1;
@@ -198,15 +213,37 @@
       text-overflow:ellipsis;
       white-space:nowrap;
     }
-    .delbtn{
-      min-width:66px;
-      border:1px solid var(--border);
-      background:#fff;
-      border-radius:12px;
-      padding:8px 10px;
-      cursor:pointer;
+
+    /* מצב מפוצל: כל ילד בשורה */
+    .splitlist{
+      display:flex;
+      flex-direction:column;
+      gap:4px;                   /* קומפקטי */
+    }
+    .splitline{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      border:1px dashed var(--border);
+      border-radius:10px;
+      padding:6px 8px;           /* נמוך */
+      background:#fafafa;
+      font-size:13px;
+    }
+    .splitkid{
       font-weight:900;
       white-space:nowrap;
+      flex:0 0 auto;
+    }
+    .splitmeal{
+      font-weight:800;
+      color:#374151;
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      text-align:left;
+      flex:1;
     }
 
     /* Modal */
@@ -264,7 +301,6 @@
   <button class="tabbtn" type="button" onclick="showTab('data')">נתונים</button>
 </div>
 
-<!-- TAB: רישום -->
 <section id="view-log" class="view active">
   <section class="card">
     <h2>רישום ארוחה</h2>
@@ -315,7 +351,6 @@
   </section>
 </section>
 
-<!-- TAB: ילדים -->
 <section id="view-kids" class="view">
   <section class="card">
     <h2>ניהול ילדים</h2>
@@ -327,7 +362,6 @@
   </section>
 </section>
 
-<!-- TAB: מנות -->
 <section id="view-dishes" class="view">
   <section class="card">
     <h2>ניהול מנות</h2>
@@ -340,16 +374,13 @@
   </section>
 </section>
 
-<!-- TAB: נתונים -->
 <section id="view-data" class="view">
   <section class="card">
     <h2>היסטוריה</h2>
 
-    <!-- Kid filter row -->
     <div class="note">סינון ילדים (אופציונלי). אם לא מסמנים כלום — מוצג הכול.</div>
     <div id="kidFilters" class="filters"></div>
 
-    <!-- Type filter row -->
     <div class="filters" id="typeFilters">
       <label class="filter"><input type="checkbox" value="בוקר" checked onchange="renderHistoryAndWeek()"> בוקר</label>
       <label class="filter"><input type="checkbox" value="צהריים" checked onchange="renderHistoryAndWeek()"> צהריים</label>
@@ -382,7 +413,6 @@
   </section>
 </section>
 
-<!-- Recipe Modal -->
 <div id="recipeBackdrop" class="modal-backdrop" onclick="closeRecipeModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-header">
@@ -414,7 +444,6 @@
 </div>
 
 <script>
-  // ===== Tabs =====
   function showTab(key){
     document.querySelectorAll(".tabbtn").forEach(b => b.classList.remove("active"));
     document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
@@ -424,7 +453,6 @@
     document.getElementById(m[1]).classList.add("active");
   }
 
-  // ===== Data =====
   const KM="meals", KK="kids", KO="mealOptions";
   let meals = JSON.parse(localStorage.getItem(KM)) || [];
   let kids = JSON.parse(localStorage.getItem(KK)) || ["מיקה","עומר"];
@@ -476,34 +504,27 @@
     renderHistoryAndWeek();
   }
 
-  // ===== Filters =====
   function getActiveTypes(){
     const checked = Array.from(document.querySelectorAll("#typeFilters input:checked")).map(x=>x.value);
     return checked.length ? checked : ["בוקר","צהריים","ערב","ביניים"];
   }
-
   function getActiveKids(){
-    // אם לא מסומן כלום => [] => נפרש כהכל
     return Array.from(document.querySelectorAll("#kidFilters input:checked")).map(x=>x.value);
   }
-
   function recordKidsList(m){
     if(m.split) return Object.keys(m.kidMeals||{});
     return (m.kids||[]);
   }
-
   function recordMatchesKids(m, activeKids){
-    if(!activeKids.length) return true; // לא סיננו => הכל
+    if(!activeKids.length) return true;
     const rk = recordKidsList(m);
     return rk.some(k => activeKids.includes(k));
   }
 
-  // נבנה מסנני ילדים פעם אחת (או כשמספר הילדים משתנה)
   let kidFilterBuiltFor = "";
   function ensureKidFilters(){
     const signature = kids.join("|");
     if(signature === kidFilterBuiltFor) return;
-
     const host = document.getElementById("kidFilters");
     host.innerHTML = "";
     kids.forEach(k => {
@@ -513,19 +534,16 @@
       lab.querySelector("input").addEventListener("change", renderHistoryAndWeek);
       host.appendChild(lab);
     });
-
-    // ברירת מחדל: לא מסומן כלום => מציג הכל (כמו שביקשת)
-    kidFilterBuiltFor = signature;
+    kidFilterBuiltFor = signature; // ברירת מחדל: ריק => מציג הכל
   }
 
-  // ===== Kids =====
   function addKid(){
     const v = (newKidInput.value || "").trim();
     if(!v) return;
     if(kids.includes(v)) return alert("הילד/ה כבר קיימ/ת");
     kids.push(v);
     newKidInput.value = "";
-    kidFilterBuiltFor = ""; // force rebuild
+    kidFilterBuiltFor = "";
     save(); renderAll();
   }
 
@@ -550,7 +568,6 @@
     save(); renderAll();
   }
 
-  // ===== Meal options =====
   function addMeal(){
     const v = (newMealInput.value || "").trim();
     if(!v) return;
@@ -587,7 +604,6 @@
     save(); renderAll();
   }
 
-  // ===== Log =====
   function toggleMode(){
     const same = sameForAll.checked;
     sameMode.style.display = same ? "block" : "none";
@@ -629,7 +645,6 @@
     save(); renderHistoryAndWeek();
   }
 
-  // ===== Suggest =====
   function suggestMeal(){
     if(!mealOptions.length) return;
     const end = weekEndDate.value || dateInput.value;
@@ -651,7 +666,7 @@
     mealSelect.value = candidates[Math.floor(Math.random()*candidates.length)];
   }
 
-  // ===== Recipe modal =====
+  // Recipe modal
   let recipeDish = null;
   function openRecipeModal(dish){
     recipeDish = dish;
@@ -695,20 +710,12 @@
     save(); hideRecipeModal(); renderMealOptionsManager();
   }
 
-  // ===== Render helpers =====
+  // Render helpers
   function typeClass(type){
     if(type === "בוקר") return "type-boker";
     if(type === "צהריים") return "type-tzohor";
     if(type === "ערב") return "type-erev";
     return "type-bein";
-  }
-  function rowKidsText(m){
-    if(m.split) return Object.entries(m.kidMeals||{}).map(([k,v]) => `${k}: ${v}`).join(" | ");
-    return (m.kids||[]).join(", ");
-  }
-  function rowMealText(m){
-    if(m.split) return "ארוחה מפוצלת";
-    return m.meal || "";
   }
 
   function groupByDate(items){
@@ -748,20 +755,38 @@
     const bottom = document.createElement("div");
     bottom.className = "entry-bottom";
 
-    const meal = document.createElement("div");
-    meal.className = "mealtext";
-    meal.textContent = rowMealText(m);
+    if(m.split){
+      // כל ילד בשורה
+      const list = document.createElement("div");
+      list.className = "splitlist";
+      const km = m.kidMeals || {};
+      Object.keys(km).forEach(k => {
+        const line = document.createElement("div");
+        line.className = "splitline";
+        line.innerHTML = `<div class="splitkid">${k}:</div><div class="splitmeal">${km[k]}</div>`;
+        list.appendChild(line);
+      });
+      bottom.appendChild(list);
+    } else {
+      // רגיל
+      const wrap = document.createElement("div");
+      wrap.className = "bottom-normal";
 
-    const kidsT = document.createElement("div");
-    kidsT.className = "kidstext";
-    kidsT.textContent = rowKidsText(m);
+      const meal = document.createElement("div");
+      meal.className = "mealtext";
+      meal.textContent = m.meal || "";
 
-    bottom.appendChild(meal);
-    bottom.appendChild(kidsT);
+      const kidsT = document.createElement("div");
+      kidsT.className = "kidstext";
+      kidsT.textContent = (m.kids||[]).join(", ");
+
+      wrap.appendChild(meal);
+      wrap.appendChild(kidsT);
+      bottom.appendChild(wrap);
+    }
 
     entry.appendChild(top);
     entry.appendChild(bottom);
-
     return entry;
   }
 
@@ -794,7 +819,7 @@
     });
   }
 
-  // ===== Render UI =====
+  // Render UI
   function renderKids(){
     kidsList.innerHTML = "";
     kids.forEach(k => {
@@ -863,7 +888,7 @@
   }
 
   function renderHistoryAndWeek(){
-    ensureKidFilters(); // בנוי פעם אחת בלבד / כשילדים משתנים
+    ensureKidFilters();
 
     const types = getActiveTypes();
     const activeKids = getActiveKids();
@@ -909,6 +934,41 @@
     }
   }
 
+  function getActiveTypes(){
+    const checked = Array.from(document.querySelectorAll("#typeFilters input:checked")).map(x=>x.value);
+    return checked.length ? checked : ["בוקר","צהריים","ערב","ביניים"];
+  }
+
+  function recordMatchesKids(m, activeKids){
+    if(!activeKids.length) return true;
+    const rk = recordKidsList(m);
+    return rk.some(k => activeKids.includes(k));
+  }
+
+  function recordKidsList(m){
+    if(m.split) return Object.keys(m.kidMeals||{});
+    return (m.kids||[]);
+  }
+
+  function getActiveKids(){
+    return Array.from(document.querySelectorAll("#kidFilters input:checked")).map(x=>x.value);
+  }
+
+  function ensureKidFilters(){
+    const signature = kids.join("|");
+    if(signature === kidFilterBuiltFor) return;
+    const host = document.getElementById("kidFilters");
+    host.innerHTML = "";
+    kids.forEach(k => {
+      const lab = document.createElement("label");
+      lab.className = "filter";
+      lab.innerHTML = `<input type="checkbox" value="${k}"> ${k}`;
+      lab.querySelector("input").addEventListener("change", renderHistoryAndWeek);
+      host.appendChild(lab);
+    });
+    kidFilterBuiltFor = signature;
+  }
+
   function renderAll(){
     renderKids();
     renderMealOptionsManager();
@@ -917,7 +977,6 @@
     renderHistoryAndWeek();
   }
 
-  // ===== Init =====
   const today = new Date().toISOString().slice(0,10);
   dateInput.value = today;
   weekEndDate.value = today;
@@ -926,6 +985,5 @@
   save();
   renderAll();
 </script>
-
 </body>
 </html>
