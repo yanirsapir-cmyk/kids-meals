@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ארוחות הילדים</title>
 
-  <!-- PWA -->
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#2563eb">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -33,7 +32,6 @@
     }
 
     .field{margin-top:10px}
-
     input,select,textarea{
       width:100%; padding:10px 12px; font-size:16px;
       border-radius:10px; border:1px solid var(--border);
@@ -43,7 +41,6 @@
 
     .inline{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
     .inline input{flex:1; min-width:180px}
-    .inline button{flex:0 0 auto}
 
     .btn{
       padding:10px 14px; border-radius:10px; border:none;
@@ -72,28 +69,23 @@
     li span{flex:1}
     .btn-group{display:flex; gap:8px; align-items:center}
 
+    /* Tabs */
+    .tabs{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
+    .tabbtn{
+      border:1px solid var(--border); background:#fff;
+      border-radius:999px; padding:9px 12px; font-weight:900; cursor:pointer;
+    }
+    .tabbtn.active{background:var(--primary); color:#fff; border-color:var(--primary);}
+    .view{display:none}
+    .view.active{display:block}
+
     /* ילדים: כפתור חיצוני */
-    .listrow{
-      display:flex;
-      gap:10px;
-      align-items:stretch;
-      margin-bottom:8px;
-    }
+    .listrow{display:flex;gap:10px;align-items:stretch;margin-bottom:8px;}
     .box{
-      flex:1;
-      background:#fff;
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:10px;
-      display:flex;
-      align-items:center;
-      min-height:44px;
+      flex:1;background:#fff;border:1px solid var(--border);
+      border-radius:12px;padding:10px;display:flex;align-items:center;min-height:44px;
     }
-    .btncol{
-      flex:0 0 auto;
-      display:flex;
-      align-items:stretch;
-    }
+    .btncol{flex:0 0 auto;display:flex;align-items:stretch;}
     .btncol .btn{height:100%}
 
     /* צ'קבוקסים */
@@ -106,22 +98,12 @@
     .checkrow input{width:18px; height:18px; margin:0}
     .note{font-size:13px;color:var(--muted);margin-top:6px}
 
-    /* Tabs */
-    .tabs{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
-    .tabbtn{
-      border:1px solid var(--border); background:#fff;
-      border-radius:999px; padding:9px 12px; font-weight:900; cursor:pointer;
-    }
-    .tabbtn.active{background:var(--primary); color:#fff; border-color:var(--primary);}
-    .view{display:none}
-    .view.active{display:block}
-
     /* ===== Filters ===== */
     .filters{
       display:flex;
       gap:8px;
-      flex-wrap:nowrap;          /* לא יורד שורה */
-      overflow-x:auto;           /* אם אין מקום -> גלילה קטנה */
+      flex-wrap:nowrap;
+      overflow-x:auto;
       -webkit-overflow-scrolling: touch;
       padding-bottom:4px;
       margin:8px 0 10px;
@@ -131,10 +113,10 @@
       align-items:center;
       gap:6px;
       font-weight:900;
-      font-size:12px;            /* קטן כדי שייכנס */
+      font-size:12px;
       background:#fff;
       border:1px solid var(--border);
-      padding:6px 8px;           /* קטן */
+      padding:6px 8px;
       border-radius:999px;
       white-space:nowrap;
       flex:0 0 auto;
@@ -157,7 +139,6 @@
       gap:10px;
       margin-bottom:8px;
     }
-
     .pill{
       display:inline-flex;
       align-items:center;
@@ -170,7 +151,6 @@
       white-space:nowrap;
     }
     .datepill{background:#f3f4f6}
-
     .typepill{border:none; min-width:78px; justify-content:center;}
     .type-boker{background:#fff7ed}
     .type-tzohor{background:#ecfeff}
@@ -197,13 +177,13 @@
       align-items:flex-start;
       justify-content:space-between;
       gap:10px;
-      font-size:13px;            /* אחיד כמו שאר הפילס */
+      font-size:13px;
       font-weight:900;
     }
     .mealtext{
       flex:1;
       min-width:0;
-      text-align:right;          /* RTL */
+      text-align:right;
       overflow:hidden;
       text-overflow:ellipsis;
       white-space:nowrap;
@@ -211,7 +191,7 @@
     .kidstext{
       flex:1;
       min-width:0;
-      text-align:left;           /* בצד שמאל */
+      text-align:left;
       font-weight:800;
       color:#374151;
       overflow:hidden;
@@ -366,17 +346,17 @@
     <h2>היסטוריה</h2>
 
     <!-- Kid filter row -->
+    <div class="note">סינון ילדים (אופציונלי). אם לא מסמנים כלום — מוצג הכול.</div>
     <div id="kidFilters" class="filters"></div>
 
     <!-- Type filter row -->
     <div class="filters" id="typeFilters">
-      <label class="filter"><input type="checkbox" value="בוקר" checked onchange="renderAll()"> בוקר</label>
-      <label class="filter"><input type="checkbox" value="צהריים" checked onchange="renderAll()"> צהריים</label>
-      <label class="filter"><input type="checkbox" value="ערב" checked onchange="renderAll()"> ערב</label>
-      <label class="filter"><input type="checkbox" value="ביניים" checked onchange="renderAll()"> ביניים</label>
+      <label class="filter"><input type="checkbox" value="בוקר" checked onchange="renderHistoryAndWeek()"> בוקר</label>
+      <label class="filter"><input type="checkbox" value="צהריים" checked onchange="renderHistoryAndWeek()"> צהריים</label>
+      <label class="filter"><input type="checkbox" value="ערב" checked onchange="renderHistoryAndWeek()"> ערב</label>
+      <label class="filter"><input type="checkbox" value="ביניים" checked onchange="renderHistoryAndWeek()"> ביניים</label>
     </div>
 
-    <div class="note">מקובץ לפי תאריך. בכל פריט: סוג + מחק, ואז מנה/ילדים בשורה שנייה.</div>
     <div id="historyWrap"></div>
   </section>
 
@@ -473,7 +453,6 @@
   };
 
   const uid = () => "m_" + Math.random().toString(16).slice(2) + "_" + Date.now();
-
   function getDishNames(){ return mealOptions.map(o => o.dish); }
   function findOptionByDish(dish){ return mealOptions.find(o => o.dish === dish) || null; }
 
@@ -494,7 +473,7 @@
     if(!confirm("למחוק את כל ההיסטוריה? (ילדים/מנות/מתכונים לא יימחקו)")) return;
     meals = [];
     save();
-    renderAll();
+    renderHistoryAndWeek();
   }
 
   // ===== Filters =====
@@ -503,66 +482,40 @@
     return checked.length ? checked : ["בוקר","צהריים","ערב","ביניים"];
   }
 
-  // kid filter: אם לא מסומן כלום -> הכל
   function getActiveKids(){
-    const checked = Array.from(document.querySelectorAll("#kidFilters input.kidcb:checked")).map(x=>x.value);
-    return checked; // יכול להיות ריק = הכל
-  }
-
-  function buildKidFilters(){
-    const host = document.getElementById("kidFilters");
-    host.innerHTML = "";
-
-    // "כל הילדים"
-    const allId = "kid_all";
-    const all = document.createElement("label");
-    all.className = "filter";
-    all.innerHTML = `<input type="checkbox" id="${allId}"> כל הילדים`;
-    host.appendChild(all);
-
-    // kids
-    kids.forEach((k, idx) => {
-      const lab = document.createElement("label");
-      lab.className = "filter";
-      lab.innerHTML = `<input class="kidcb" type="checkbox" value="${k}"> ${k}`;
-      host.appendChild(lab);
-    });
-
-    // התנהגות:
-    // - אם לוחצים "כל הילדים" => מסמן/מבטל את כולם
-    // - אם מסמנים/מבטלים ילד => "כל הילדים" יתעדכן
-    const allCb = document.getElementById(allId);
-    const kidCbs = Array.from(document.querySelectorAll("#kidFilters input.kidcb"));
-
-    function syncAll(){
-      const checkedCount = kidCbs.filter(x=>x.checked).length;
-      allCb.checked = (checkedCount === kidCbs.length && kidCbs.length>0);
-      renderAll();
-    }
-
-    allCb.addEventListener("change", () => {
-      kidCbs.forEach(x => x.checked = allCb.checked);
-      renderAll();
-    });
-
-    kidCbs.forEach(x => x.addEventListener("change", syncAll));
-
-    // ברירת מחדל: הכל (נוח למשתמש)
-    allCb.checked = true;
-    kidCbs.forEach(x => x.checked = true);
+    // אם לא מסומן כלום => [] => נפרש כהכל
+    return Array.from(document.querySelectorAll("#kidFilters input:checked")).map(x=>x.value);
   }
 
   function recordKidsList(m){
-    if(m.split){
-      return Object.keys(m.kidMeals||{});
-    }
+    if(m.split) return Object.keys(m.kidMeals||{});
     return (m.kids||[]);
   }
 
   function recordMatchesKids(m, activeKids){
-    if(!activeKids.length) return true; // לא סיננו = הכל
+    if(!activeKids.length) return true; // לא סיננו => הכל
     const rk = recordKidsList(m);
     return rk.some(k => activeKids.includes(k));
+  }
+
+  // נבנה מסנני ילדים פעם אחת (או כשמספר הילדים משתנה)
+  let kidFilterBuiltFor = "";
+  function ensureKidFilters(){
+    const signature = kids.join("|");
+    if(signature === kidFilterBuiltFor) return;
+
+    const host = document.getElementById("kidFilters");
+    host.innerHTML = "";
+    kids.forEach(k => {
+      const lab = document.createElement("label");
+      lab.className = "filter";
+      lab.innerHTML = `<input type="checkbox" value="${k}"> ${k}`;
+      lab.querySelector("input").addEventListener("change", renderHistoryAndWeek);
+      host.appendChild(lab);
+    });
+
+    // ברירת מחדל: לא מסומן כלום => מציג הכל (כמו שביקשת)
+    kidFilterBuiltFor = signature;
   }
 
   // ===== Kids =====
@@ -572,6 +525,7 @@
     if(kids.includes(v)) return alert("הילד/ה כבר קיימ/ת");
     kids.push(v);
     newKidInput.value = "";
+    kidFilterBuiltFor = ""; // force rebuild
     save(); renderAll();
   }
 
@@ -592,6 +546,7 @@
       return (m.kids||[]).length > 0;
     });
 
+    kidFilterBuiltFor = "";
     save(); renderAll();
   }
 
@@ -632,7 +587,7 @@
     save(); renderAll();
   }
 
-  // ===== Log (save meal) =====
+  // ===== Log =====
   function toggleMode(){
     const same = sameForAll.checked;
     sameMode.style.display = same ? "block" : "none";
@@ -646,7 +601,7 @@
     if(!mealOptions.length) return alert("המאגר ריק — הוסף מנה קודם");
     if(!kids.length) return alert("אין ילדים — הוסף ילד/ה קודם");
 
-    const createdAt = Date.now(); // נסתר, רק למיון
+    const createdAt = Date.now();
 
     if(sameForAll.checked){
       const meal = mealSelect.value;
@@ -665,19 +620,18 @@
       meals.push({id: uid(), createdAt, date, type, split: true, kidMeals});
     }
 
-    save(); renderAll();
+    save(); renderHistoryAndWeek();
   }
 
   function deleteReport(id){
     if(!confirm("למחוק דיווח?")) return;
     meals = meals.filter(m => m.id !== id);
-    save(); renderAll();
+    save(); renderHistoryAndWeek();
   }
 
   // ===== Suggest =====
   function suggestMeal(){
     if(!mealOptions.length) return;
-
     const end = weekEndDate.value || dateInput.value;
     const start = addDays(end, -6);
     const week = meals.filter(m => m.date >= start && m.date <= end);
@@ -694,13 +648,11 @@
     let min = Infinity;
     getDishNames().forEach(opt => { min = Math.min(min, counts.get(opt)||0); });
     const candidates = getDishNames().filter(opt => (counts.get(opt)||0) === min);
-    const pick = candidates[Math.floor(Math.random()*candidates.length)];
-    mealSelect.value = pick;
+    mealSelect.value = candidates[Math.floor(Math.random()*candidates.length)];
   }
 
   // ===== Recipe modal =====
   let recipeDish = null;
-
   function openRecipeModal(dish){
     recipeDish = dish;
     const opt = findOptionByDish(dish) || {recipeText:"", recipeUrl:""};
@@ -710,14 +662,8 @@
     pasteWarn.style.display = "none";
     recipeBackdrop.style.display = "flex";
   }
-
-  function hideRecipeModal(){
-    recipeBackdrop.style.display = "none";
-    recipeDish = null;
-  }
-  function closeRecipeModal(e){
-    if(e.target === recipeBackdrop) hideRecipeModal();
-  }
+  function hideRecipeModal(){ recipeBackdrop.style.display = "none"; recipeDish = null; }
+  function closeRecipeModal(e){ if(e.target === recipeBackdrop) hideRecipeModal(); }
 
   async function pasteRecipe(){
     pasteWarn.style.display = "none";
@@ -756,32 +702,16 @@
     if(type === "ערב") return "type-erev";
     return "type-bein";
   }
-
   function rowKidsText(m){
-    if(m.split){
-      return Object.entries(m.kidMeals||{}).map(([k,v]) => `${k}: ${v}`).join(" | ");
-    }
+    if(m.split) return Object.entries(m.kidMeals||{}).map(([k,v]) => `${k}: ${v}`).join(" | ");
     return (m.kids||[]).join(", ");
   }
-
   function rowMealText(m){
     if(m.split) return "ארוחה מפוצלת";
     return m.meal || "";
   }
 
-  function sortMealsNewestFirst(arr){
-    return [...arr].sort((a,b) => {
-      const ad = (a.date || "");
-      const bd = (b.date || "");
-      if(ad !== bd) return bd.localeCompare(ad);
-      const ac = Number(a.createdAt || (String(a.id||"").split("_").pop())) || 0;
-      const bc = Number(b.createdAt || (String(b.id||"").split("_").split("-").pop())) || 0;
-      return (Number(b.createdAt||0) || 0) - (Number(a.createdAt||0) || 0);
-    });
-  }
-
-  function groupByDateSorted(items){
-    // items assumed already filtered; return [{date, items:[...]}] date desc
+  function groupByDate(items){
     const map = new Map();
     items.forEach(m => {
       const d = m.date || "";
@@ -791,7 +721,7 @@
     const dates = [...map.keys()].sort((a,b)=>b.localeCompare(a));
     return dates.map(d => ({
       date: d,
-      items: sortMealsNewestFirst(map.get(d))
+      items: map.get(d).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))
     }));
   }
 
@@ -837,7 +767,7 @@
 
   function renderGrouped(container, items){
     container.innerHTML = "";
-    const groups = groupByDateSorted(items);
+    const groups = groupByDate(items);
     if(!groups.length){
       const empty = document.createElement("div");
       empty.className = "note";
@@ -845,7 +775,6 @@
       container.appendChild(empty);
       return;
     }
-
     groups.forEach(g => {
       const day = document.createElement("div");
       day.className = "daycard";
@@ -861,12 +790,11 @@
       day.appendChild(head);
 
       g.items.forEach(m => day.appendChild(createEntry(m)));
-
       container.appendChild(day);
     });
   }
 
-  // ===== Render =====
+  // ===== Render UI =====
   function renderKids(){
     kidsList.innerHTML = "";
     kids.forEach(k => {
@@ -884,7 +812,6 @@
   function renderMealOptionsManager(){
     mealsOptionsList.innerHTML = "";
     const sorted = [...mealOptions].sort((a,b)=>a.dish.localeCompare(b.dish,"he"));
-
     sorted.forEach(o => {
       const li = document.createElement("li");
       const hasRecipe = (o.recipeText && o.recipeText.trim().length>0) || (o.recipeUrl && o.recipeUrl.trim().length>0);
@@ -916,10 +843,7 @@
     kids.forEach(k => {
       const row = document.createElement("div");
       row.className = "checkrow";
-      row.innerHTML = `
-        <input type="checkbox" id="cb_${k}" checked>
-        <div style="font-weight:800;">${k}</div>
-      `;
+      row.innerHTML = `<input type="checkbox" id="cb_${k}" checked><div style="font-weight:800;">${k}</div>`;
       sameKids.appendChild(row);
     });
 
@@ -927,10 +851,7 @@
     kids.forEach(k => {
       const row = document.createElement("div");
       row.className = "checkrow";
-      row.innerHTML = `
-        <div style="font-weight:900; min-width:80px;">${k}</div>
-        <select id="sel_${k}"></select>
-      `;
+      row.innerHTML = `<div style="font-weight:900; min-width:80px;">${k}</div><select id="sel_${k}"></select>`;
       const sel = row.querySelector("select");
       getDishNames().forEach(m => {
         const opt = document.createElement("option");
@@ -942,17 +863,18 @@
   }
 
   function renderHistoryAndWeek(){
+    ensureKidFilters(); // בנוי פעם אחת בלבד / כשילדים משתנים
+
     const types = getActiveTypes();
     const activeKids = getActiveKids();
 
-    // History (filtered)
     const filteredAll = meals
       .filter(m => types.includes(m.type))
-      .filter(m => recordMatchesKids(m, activeKids));
+      .filter(m => recordMatchesKids(m, activeKids))
+      .sort((a,b)=> (b.date||"").localeCompare(a.date||"") || (b.createdAt||0)-(a.createdAt||0));
 
-    renderGrouped(historyWrap, sortMealsNewestFirst(filteredAll));
+    renderGrouped(historyWrap, filteredAll);
 
-    // Week
     const end = weekEndDate.value || dateInput.value;
     const start = addDays(end, -6);
 
@@ -961,9 +883,9 @@
       .filter(m => types.includes(m.type))
       .filter(m => recordMatchesKids(m, activeKids));
 
-    renderGrouped(weekWrap, sortMealsNewestFirst(week));
+    renderGrouped(weekWrap, week.sort((a,b)=> (b.date||"").localeCompare(a.date||"") || (b.createdAt||0)-(a.createdAt||0)));
 
-    // Variety (based on filtered week)
+    // Variety
     const counts = new Map();
     week.forEach(m => {
       if(m.split){
@@ -972,7 +894,6 @@
         counts.set(m.meal, (counts.get(m.meal)||0)+1);
       }
     });
-
     varietyList.innerHTML = "";
     const entries = [...counts.entries()].sort((a,b)=>b[1]-a[1] || a[0].localeCompare(b[0],"he"));
     if(!entries.length){
@@ -989,8 +910,6 @@
   }
 
   function renderAll(){
-    // חשוב: המסננים תלויים בילדים
-    buildKidFilters();
     renderKids();
     renderMealOptionsManager();
     renderSelectorsAndChecks();
@@ -1002,7 +921,7 @@
   const today = new Date().toISOString().slice(0,10);
   dateInput.value = today;
   weekEndDate.value = today;
-  weekEndDate.addEventListener("change", () => renderHistoryAndWeek());
+  weekEndDate.addEventListener("change", renderHistoryAndWeek);
 
   save();
   renderAll();
