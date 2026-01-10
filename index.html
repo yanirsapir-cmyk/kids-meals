@@ -41,9 +41,7 @@
     }
     textarea{min-height:150px; resize:vertical}
 
-    .inline{
-      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-    }
+    .inline{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
     .inline input{flex:1; min-width:180px}
     .inline button{flex:0 0 auto}
 
@@ -58,8 +56,7 @@
     .iconbtn{
       background:#f3f4f6; color:#111827;
       padding:8px 10px; border-radius:10px; border:1px solid var(--border);
-      font-weight:800;
-      line-height:1;
+      font-weight:800; line-height:1;
     }
     .iconbtn.dangerish{
       background:#f3f4f6; color:#111827; border:1px solid var(--border);
@@ -122,37 +119,43 @@
     /* ===== Filters ===== */
     .filters{
       display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      margin:8px 0 12px;
+      gap:8px;
+      flex-wrap:nowrap;          /* לא יורד שורה */
+      overflow-x:auto;           /* אם אין מקום -> גלילה קטנה */
+      -webkit-overflow-scrolling: touch;
+      padding-bottom:4px;
+      margin:8px 0 10px;
     }
     .filter{
       display:flex;
       align-items:center;
       gap:6px;
-      font-weight:800;
+      font-weight:900;
+      font-size:12px;            /* קטן כדי שייכנס */
       background:#fff;
       border:1px solid var(--border);
-      padding:8px 10px;
+      padding:6px 8px;           /* קטן */
       border-radius:999px;
+      white-space:nowrap;
+      flex:0 0 auto;
     }
-    .filter input{width:18px;height:18px;margin:0}
+    .filter input{width:16px;height:16px;margin:0}
 
-    /* ===== Rows for history/week (GRID - no horizontal scroll) ===== */
-    .rowwrap{margin-top:10px}
-
-    .mealrow{
-      display:grid;
-      grid-template-columns: 110px 78px 1fr minmax(90px, 0.9fr) 66px; /* תאריך | סוג | מנה | ילדים | מחק */
-      gap:10px;
-      align-items:center;
+    /* ===== Grouped-by-date cards ===== */
+    .daycard{
       border:1px solid var(--border);
       background:#fff;
-      border-radius:14px;
+      border-radius:16px;
       padding:10px;
-      margin-bottom:8px;
-      width:100%;
+      margin-bottom:10px;
       overflow:hidden;
+    }
+    .dayheader{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:8px;
     }
 
     .pill{
@@ -165,33 +168,58 @@
       font-size:13px;
       border:1px solid var(--border);
       white-space:nowrap;
-      width:100%;
     }
     .datepill{background:#f3f4f6}
-    .typepill{border:none}
 
+    .typepill{border:none; min-width:78px; justify-content:center;}
     .type-boker{background:#fff7ed}
     .type-tzohor{background:#ecfeff}
     .type-erev{background:#eef2ff}
     .type-bein{background:#fdf2f8}
 
-    /* גודל אחיד כמו התאריך/סוג */
-    .mealname, .kidstxt{
-      font-size:13px;
+    /* ===== Entry row: 2 lines ===== */
+    .entry{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:10px;
+      margin-bottom:8px;
+      background:#fff;
+    }
+    .entry-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:8px;
+    }
+    .entry-bottom{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      font-size:13px;            /* אחיד כמו שאר הפילס */
       font-weight:900;
+    }
+    .mealtext{
+      flex:1;
+      min-width:0;
+      text-align:right;          /* RTL */
       overflow:hidden;
       text-overflow:ellipsis;
       white-space:nowrap;
-      min-width:0;
     }
-    .kidstxt{
+    .kidstext{
+      flex:1;
+      min-width:0;
+      text-align:left;           /* בצד שמאל */
       font-weight:800;
       color:#374151;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
     }
-
     .delbtn{
-      width:66px;
-      justify-self:start; /* ב-RTL זה בצד שמאל ויישר */
+      min-width:66px;
       border:1px solid var(--border);
       background:#fff;
       border-radius:12px;
@@ -201,20 +229,7 @@
       white-space:nowrap;
     }
 
-    /* במסכים ממש צרים: הילדים יורדים שורה כדי שלא תהיה גלילה */
-    @media (max-width: 420px){
-      .mealrow{
-        grid-template-columns: 110px 78px 1fr 66px;
-        grid-template-rows: auto auto;
-      }
-      .kidstxt{
-        grid-column: 1 / -1;
-        white-space:nowrap;
-        opacity:0.95;
-      }
-    }
-
-    /* ===== Modal ===== */
+    /* Modal */
     .modal-backdrop{
       position:fixed; inset:0;
       background:rgba(0,0,0,0.35);
@@ -350,22 +365,25 @@
   <section class="card">
     <h2>היסטוריה</h2>
 
-    <!-- Filters (multi-select) -->
-    <div class="filters">
+    <!-- Kid filter row -->
+    <div id="kidFilters" class="filters"></div>
+
+    <!-- Type filter row -->
+    <div class="filters" id="typeFilters">
       <label class="filter"><input type="checkbox" value="בוקר" checked onchange="renderAll()"> בוקר</label>
       <label class="filter"><input type="checkbox" value="צהריים" checked onchange="renderAll()"> צהריים</label>
       <label class="filter"><input type="checkbox" value="ערב" checked onchange="renderAll()"> ערב</label>
       <label class="filter"><input type="checkbox" value="ביניים" checked onchange="renderAll()"> ביניים</label>
     </div>
 
-    <div class="note">החדש למעלה. כל שורה: תאריך | סוג | מנה | ילדים | מחק</div>
-    <div id="historyWrap" class="rowwrap"></div>
+    <div class="note">מקובץ לפי תאריך. בכל פריט: סוג + מחק, ואז מנה/ילדים בשורה שנייה.</div>
+    <div id="historyWrap"></div>
   </section>
 
   <section class="card">
     <h2>שבוע אחרון</h2>
     <input type="date" id="weekEndDate">
-    <div id="weekWrap" class="rowwrap"></div>
+    <div id="weekWrap"></div>
 
     <h3>גיוון</h3>
     <ul id="varietyList"></ul>
@@ -481,9 +499,70 @@
 
   // ===== Filters =====
   function getActiveTypes(){
-    const checked = Array.from(document.querySelectorAll(".filters input:checked")).map(x=>x.value);
-    // אם לא סימנו כלום -> תציג הכל
+    const checked = Array.from(document.querySelectorAll("#typeFilters input:checked")).map(x=>x.value);
     return checked.length ? checked : ["בוקר","צהריים","ערב","ביניים"];
+  }
+
+  // kid filter: אם לא מסומן כלום -> הכל
+  function getActiveKids(){
+    const checked = Array.from(document.querySelectorAll("#kidFilters input.kidcb:checked")).map(x=>x.value);
+    return checked; // יכול להיות ריק = הכל
+  }
+
+  function buildKidFilters(){
+    const host = document.getElementById("kidFilters");
+    host.innerHTML = "";
+
+    // "כל הילדים"
+    const allId = "kid_all";
+    const all = document.createElement("label");
+    all.className = "filter";
+    all.innerHTML = `<input type="checkbox" id="${allId}"> כל הילדים`;
+    host.appendChild(all);
+
+    // kids
+    kids.forEach((k, idx) => {
+      const lab = document.createElement("label");
+      lab.className = "filter";
+      lab.innerHTML = `<input class="kidcb" type="checkbox" value="${k}"> ${k}`;
+      host.appendChild(lab);
+    });
+
+    // התנהגות:
+    // - אם לוחצים "כל הילדים" => מסמן/מבטל את כולם
+    // - אם מסמנים/מבטלים ילד => "כל הילדים" יתעדכן
+    const allCb = document.getElementById(allId);
+    const kidCbs = Array.from(document.querySelectorAll("#kidFilters input.kidcb"));
+
+    function syncAll(){
+      const checkedCount = kidCbs.filter(x=>x.checked).length;
+      allCb.checked = (checkedCount === kidCbs.length && kidCbs.length>0);
+      renderAll();
+    }
+
+    allCb.addEventListener("change", () => {
+      kidCbs.forEach(x => x.checked = allCb.checked);
+      renderAll();
+    });
+
+    kidCbs.forEach(x => x.addEventListener("change", syncAll));
+
+    // ברירת מחדל: הכל (נוח למשתמש)
+    allCb.checked = true;
+    kidCbs.forEach(x => x.checked = true);
+  }
+
+  function recordKidsList(m){
+    if(m.split){
+      return Object.keys(m.kidMeals||{});
+    }
+    return (m.kids||[]);
+  }
+
+  function recordMatchesKids(m, activeKids){
+    if(!activeKids.length) return true; // לא סיננו = הכל
+    const rk = recordKidsList(m);
+    return rk.some(k => activeKids.includes(k));
   }
 
   // ===== Kids =====
@@ -670,7 +749,7 @@
     save(); hideRecipeModal(); renderMealOptionsManager();
   }
 
-  // ===== Render helpers for rows =====
+  // ===== Render helpers =====
   function typeClass(type){
     if(type === "בוקר") return "type-boker";
     if(type === "צהריים") return "type-tzohor";
@@ -696,30 +775,36 @@
       const bd = (b.date || "");
       if(ad !== bd) return bd.localeCompare(ad);
       const ac = Number(a.createdAt || (String(a.id||"").split("_").pop())) || 0;
-      const bc = Number(b.createdAt || (String(b.id||"").split("_").pop())) || 0;
-      return bc - ac;
+      const bc = Number(b.createdAt || (String(b.id||"").split("_").split("-").pop())) || 0;
+      return (Number(b.createdAt||0) || 0) - (Number(a.createdAt||0) || 0);
     });
   }
 
-  function createMealRow(m){
-    const wrap = document.createElement("div");
-    wrap.className = "mealrow";
+  function groupByDateSorted(items){
+    // items assumed already filtered; return [{date, items:[...]}] date desc
+    const map = new Map();
+    items.forEach(m => {
+      const d = m.date || "";
+      if(!map.has(d)) map.set(d, []);
+      map.get(d).push(m);
+    });
+    const dates = [...map.keys()].sort((a,b)=>b.localeCompare(a));
+    return dates.map(d => ({
+      date: d,
+      items: sortMealsNewestFirst(map.get(d))
+    }));
+  }
 
-    const dateP = document.createElement("span");
-    dateP.className = "pill datepill";
-    dateP.textContent = m.date || "";
+  function createEntry(m){
+    const entry = document.createElement("div");
+    entry.className = "entry";
+
+    const top = document.createElement("div");
+    top.className = "entry-top";
 
     const typeP = document.createElement("span");
     typeP.className = "pill typepill " + typeClass(m.type);
     typeP.textContent = m.type || "";
-
-    const mealName = document.createElement("div");
-    mealName.className = "mealname";
-    mealName.textContent = rowMealText(m);
-
-    const kidsTxt = document.createElement("div");
-    kidsTxt.className = "kidstxt";
-    kidsTxt.textContent = rowKidsText(m);
 
     const del = document.createElement("button");
     del.className = "delbtn";
@@ -727,13 +812,58 @@
     del.textContent = "מחק";
     del.onclick = () => deleteReport(m.id);
 
-    wrap.appendChild(dateP);
-    wrap.appendChild(typeP);
-    wrap.appendChild(mealName);
-    wrap.appendChild(kidsTxt);
-    wrap.appendChild(del);
+    top.appendChild(typeP);
+    top.appendChild(del);
 
-    return wrap;
+    const bottom = document.createElement("div");
+    bottom.className = "entry-bottom";
+
+    const meal = document.createElement("div");
+    meal.className = "mealtext";
+    meal.textContent = rowMealText(m);
+
+    const kidsT = document.createElement("div");
+    kidsT.className = "kidstext";
+    kidsT.textContent = rowKidsText(m);
+
+    bottom.appendChild(meal);
+    bottom.appendChild(kidsT);
+
+    entry.appendChild(top);
+    entry.appendChild(bottom);
+
+    return entry;
+  }
+
+  function renderGrouped(container, items){
+    container.innerHTML = "";
+    const groups = groupByDateSorted(items);
+    if(!groups.length){
+      const empty = document.createElement("div");
+      empty.className = "note";
+      empty.textContent = "אין רישומים להצגה.";
+      container.appendChild(empty);
+      return;
+    }
+
+    groups.forEach(g => {
+      const day = document.createElement("div");
+      day.className = "daycard";
+
+      const head = document.createElement("div");
+      head.className = "dayheader";
+
+      const dateP = document.createElement("span");
+      dateP.className = "pill datepill";
+      dateP.textContent = g.date;
+
+      head.appendChild(dateP);
+      day.appendChild(head);
+
+      g.items.forEach(m => day.appendChild(createEntry(m)));
+
+      container.appendChild(day);
+    });
   }
 
   // ===== Render =====
@@ -813,36 +943,25 @@
 
   function renderHistoryAndWeek(){
     const types = getActiveTypes();
+    const activeKids = getActiveKids();
 
-    // History
-    historyWrap.innerHTML = "";
-    const sortedAll = sortMealsNewestFirst(meals.filter(m => types.includes(m.type)));
-    if(!sortedAll.length){
-      const empty = document.createElement("div");
-      empty.className = "note";
-      empty.textContent = "אין עדיין רישומים.";
-      historyWrap.appendChild(empty);
-    } else {
-      sortedAll.forEach(m => historyWrap.appendChild(createMealRow(m)));
-    }
+    // History (filtered)
+    const filteredAll = meals
+      .filter(m => types.includes(m.type))
+      .filter(m => recordMatchesKids(m, activeKids));
+
+    renderGrouped(historyWrap, sortMealsNewestFirst(filteredAll));
 
     // Week
     const end = weekEndDate.value || dateInput.value;
     const start = addDays(end, -6);
+
     const week = meals
       .filter(m => m.date >= start && m.date <= end)
-      .filter(m => types.includes(m.type));
-    const sortedWeek = sortMealsNewestFirst(week);
+      .filter(m => types.includes(m.type))
+      .filter(m => recordMatchesKids(m, activeKids));
 
-    weekWrap.innerHTML = "";
-    if(!sortedWeek.length){
-      const emptyW = document.createElement("div");
-      emptyW.className = "note";
-      emptyW.textContent = "אין רישומים בשבוע הזה.";
-      weekWrap.appendChild(emptyW);
-    } else {
-      sortedWeek.forEach(m => weekWrap.appendChild(createMealRow(m)));
-    }
+    renderGrouped(weekWrap, sortMealsNewestFirst(week));
 
     // Variety (based on filtered week)
     const counts = new Map();
@@ -870,6 +989,8 @@
   }
 
   function renderAll(){
+    // חשוב: המסננים תלויים בילדים
+    buildKidFilters();
     renderKids();
     renderMealOptionsManager();
     renderSelectorsAndChecks();
@@ -881,7 +1002,7 @@
   const today = new Date().toISOString().slice(0,10);
   dateInput.value = today;
   weekEndDate.value = today;
-  weekEndDate.addEventListener("change", renderAll);
+  weekEndDate.addEventListener("change", () => renderHistoryAndWeek());
 
   save();
   renderAll();
