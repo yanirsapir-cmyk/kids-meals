@@ -1,5 +1,4 @@
-// שינוי גרסה כאן מכריח עדכון (תגדיל כשצריך)
-const CACHE = "kids-meals-cache-v2";
+const CACHE = "kids-meals-cache-v3";
 
 const CORE = [
   "./",
@@ -9,7 +8,6 @@ const CORE = [
   "./icon-512.png"
 ];
 
-// מתקין ומכין Cache
 self.addEventListener("install", (event) => {
   self.skipWaiting();
   event.waitUntil(
@@ -17,7 +15,6 @@ self.addEventListener("install", (event) => {
   );
 });
 
-// מפעיל את ה-SW מיד + מוחק קאש ישן
 self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
@@ -26,16 +23,11 @@ self.addEventListener("activate", (event) => {
   })());
 });
 
-// אסטרטגיה:
-// - index.html: Network-first (כדי שעדכוני קוד יגיעו)
-// - שאר הקבצים: Cache-first
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
-
   if (url.origin !== location.origin) return;
 
-  // Network-first ל-index.html
   if (url.pathname.endsWith("/") || url.pathname.endsWith("/index.html")) {
     event.respondWith(
       fetch(req)
@@ -49,7 +41,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Cache-first לכל השאר
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
