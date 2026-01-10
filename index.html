@@ -32,7 +32,6 @@
       padding:14px; margin-bottom:14px;
     }
 
-    .spacer{margin-bottom:14px}
     .field{margin-top:10px}
 
     input,select,textarea{
@@ -42,7 +41,6 @@
     }
     textarea{min-height:150px; resize:vertical}
 
-    /* שורה: אינפוט + כפתור באותה שורה */
     .inline{
       display:flex; gap:10px; align-items:center; flex-wrap:nowrap;
     }
@@ -67,7 +65,6 @@
       background:#f3f4f6; color:#111827; border:1px solid var(--border);
     }
 
-    /* רשימות רגילות (למשל מנות + שבוע) */
     ul{list-style:none;padding:0;margin:10px 0 0}
     li{
       display:flex; justify-content:space-between; gap:10px;
@@ -78,7 +75,7 @@
     li span{flex:1}
     .btn-group{display:flex; gap:8px; align-items:center}
 
-    /* ✅ מבנה: מסגרת לטקסט + כפתור חיצוני (ילדים/היסטוריה) */
+    /* כפתור חיצוני (ילדים/היסטוריה) */
     .listrow{
       display:flex;
       gap:10px;
@@ -100,11 +97,9 @@
       display:flex;
       align-items:stretch;
     }
-    .btncol .btn{
-      height:100%;
-    }
+    .btncol .btn{height:100%}
 
-    /* צ'קבוקסים מיושרים יפה */
+    /* צ'קבוקסים */
     .checks{
       display:flex; flex-direction:column; gap:10px; margin-top:8px;
     }
@@ -115,6 +110,28 @@
     }
     .checkrow input{width:18px; height:18px; margin:0}
     .note{font-size:13px;color:var(--muted);margin-top:6px}
+
+    /* ===== Tabs ===== */
+    .tabs{
+      display:flex; gap:8px;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+    .tabbtn{
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:999px;
+      padding:9px 12px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .tabbtn.active{
+      background:var(--primary);
+      color:#fff;
+      border-color:var(--primary);
+    }
+    .view{display:none}
+    .view.active{display:block}
 
     /* ===== Modal ===== */
     .modal-backdrop{
@@ -151,8 +168,17 @@
       gap:10px;
       flex-wrap:wrap;
     }
-    .tiny{padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:#f3f4f6; font-weight:800; cursor:pointer;}
+    .tiny{
+      padding:8px 10px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:#f3f4f6;
+      font-weight:800;
+      cursor:pointer;
+      white-space:nowrap;
+    }
     .warn{color:var(--danger); font-size:13px; margin-top:8px; display:none;}
+
     @media(min-width:700px){
       body{max-width:820px;margin:auto}
     }
@@ -162,96 +188,113 @@
 <body>
 <h1>🍽️ ארוחות הילדים</h1>
 
-<div class="spacer">
-  <button class="btn danger" type="button" onclick="resetData()">איפוס נתונים</button>
+<!-- Tabs (במקום "איפוס נתונים") -->
+<div class="tabs">
+  <button class="tabbtn active" type="button" onclick="showTab('log')">רישום</button>
+  <button class="tabbtn" type="button" onclick="showTab('kids')">ניהול ילדים</button>
+  <button class="tabbtn" type="button" onclick="showTab('dishes')">ניהול מנות</button>
+  <button class="tabbtn" type="button" onclick="showTab('data')">נתונים</button>
 </div>
 
-<!-- ילדים -->
-<section class="card">
-  <h2>ניהול ילדים</h2>
-  <div class="inline">
-    <input id="newKidInput" placeholder="שם ילד/ה">
-    <button class="btn primary" type="button" onclick="addKid()">הוסף</button>
-  </div>
-  <ul id="kidsList"></ul>
-</section>
+<!-- ===== TAB: רישום ===== -->
+<section id="view-log" class="view active">
+  <section class="card">
+    <h2>רישום ארוחה</h2>
 
-<!-- מנות -->
-<section class="card">
-  <h2>ניהול מנות</h2>
-  <div class="inline">
-    <input id="newMealInput" placeholder="שם מנה">
-    <button class="btn primary" type="button" onclick="addMeal()">הוסף</button>
-  </div>
-  <div class="note">מחיקה כאן מסירה מהמאגר בלבד (לא מוחקת היסטוריה).</div>
-  <ul id="mealsOptionsList"></ul>
-</section>
-
-<!-- רישום -->
-<section class="card">
-  <h2>רישום ארוחה</h2>
-
-  <div class="field">
-    <label>תאריך</label>
-    <input type="date" id="dateInput">
-  </div>
-
-  <div class="field">
-    <label>סוג ארוחה</label>
-    <select id="mealType">
-      <option value="בוקר">בוקר</option>
-      <option value="צהריים">צהריים</option>
-      <option value="ערב" selected>ערב</option>
-      <option value="ביניים">ביניים</option>
-    </select>
-  </div>
-
-  <div class="field checkrow" style="justify-content:space-between;">
-    <div style="display:flex;align-items:center;gap:10px;">
-      <input type="checkbox" id="sameForAll" checked onchange="toggleMode()">
-      <strong>אותה ארוחה לכולם</strong>
-    </div>
-  </div>
-
-  <!-- מצב משותף -->
-  <div id="sameMode">
     <div class="field">
-      <label>מנה</label>
-      <div class="inline">
-        <select id="mealSelect"></select>
-        <button class="btn ghost" type="button" onclick="suggestMeal()">תן לי רעיון</button>
+      <label>תאריך</label>
+      <input type="date" id="dateInput">
+    </div>
+
+    <div class="field">
+      <label>סוג ארוחה</label>
+      <select id="mealType">
+        <option value="בוקר">בוקר</option>
+        <option value="צהריים">צהריים</option>
+        <option value="ערב" selected>ערב</option>
+        <option value="ביניים">ביניים</option>
+      </select>
+    </div>
+
+    <div class="field checkrow" style="justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <input type="checkbox" id="sameForAll" checked onchange="toggleMode()">
+        <strong>אותה ארוחה לכולם</strong>
       </div>
     </div>
 
-    <h3>מי אכל?</h3>
-    <div id="sameKids" class="checks"></div>
-  </div>
+    <!-- מצב משותף -->
+    <div id="sameMode">
+      <div class="field">
+        <label>מנה</label>
+        <div class="inline">
+          <select id="mealSelect"></select>
+          <button class="btn ghost" type="button" onclick="suggestMeal()">תן לי רעיון</button>
+        </div>
+      </div>
 
-  <!-- מצב פיצול -->
-  <div id="splitMode" style="display:none;">
-    <h3>בחירה נפרדת לכל ילד</h3>
-    <div id="splitKids" class="checks"></div>
-  </div>
+      <h3>מי אכל?</h3>
+      <div id="sameKids" class="checks"></div>
+    </div>
 
-  <div class="field">
-    <button class="btn primary" type="button" onclick="saveMeal()">שמירה</button>
-  </div>
+    <!-- מצב פיצול -->
+    <div id="splitMode" style="display:none;">
+      <h3>בחירה נפרדת לכל ילד</h3>
+      <div id="splitKids" class="checks"></div>
+    </div>
+
+    <div class="field">
+      <button class="btn primary" type="button" onclick="saveMeal()">שמירה</button>
+    </div>
+  </section>
 </section>
 
-<!-- היסטוריה -->
-<section class="card">
-  <h2>היסטוריה</h2>
-  <ul id="mealList"></ul>
+<!-- ===== TAB: ניהול ילדים ===== -->
+<section id="view-kids" class="view">
+  <section class="card">
+    <h2>ניהול ילדים</h2>
+    <div class="inline">
+      <input id="newKidInput" placeholder="שם ילד/ה">
+      <button class="btn primary" type="button" onclick="addKid()">הוסף</button>
+    </div>
+    <ul id="kidsList"></ul>
+  </section>
 </section>
 
-<!-- שבוע + גיוון -->
-<section class="card">
-  <h2>שבוע אחרון</h2>
-  <input type="date" id="weekEndDate">
-  <ul id="weekList"></ul>
+<!-- ===== TAB: ניהול מנות ===== -->
+<section id="view-dishes" class="view">
+  <section class="card">
+    <h2>ניהול מנות</h2>
+    <div class="inline">
+      <input id="newMealInput" placeholder="שם מנה">
+      <button class="btn primary" type="button" onclick="addMeal()">הוסף</button>
+    </div>
+    <div class="note">מחיקה כאן מסירה מהמאגר בלבד (לא מוחקת היסטוריה).</div>
+    <ul id="mealsOptionsList"></ul>
+  </section>
+</section>
 
-  <h3>גיוון</h3>
-  <ul id="varietyList"></ul>
+<!-- ===== TAB: נתונים ===== -->
+<section id="view-data" class="view">
+  <section class="card">
+    <h2>היסטוריה</h2>
+    <ul id="mealList"></ul>
+  </section>
+
+  <section class="card">
+    <h2>שבוע אחרון</h2>
+    <input type="date" id="weekEndDate">
+    <ul id="weekList"></ul>
+
+    <h3>גיוון</h3>
+    <ul id="varietyList"></ul>
+  </section>
+
+  <section class="card">
+    <h2>איפוס</h2>
+    <div class="note">זה מוחק הכל מהמכשיר (ילדים/מנות/היסטוריה/מתכונים).</div>
+    <button class="btn danger" type="button" onclick="resetData()">איפוס נתונים</button>
+  </section>
 </section>
 
 <!-- ===== Recipe Modal ===== -->
@@ -260,8 +303,6 @@
     <div class="modal-header">
       <div class="modal-title" id="recipeTitle">מתכון</div>
       <div class="modal-actions">
-        <button class="tiny" type="button" onclick="pasteRecipe()">הדבק</button>
-        <button class="tiny" type="button" onclick="openRecipeLink()">פתח קישור</button>
         <button class="tiny" type="button" onclick="saveRecipe()">שמירה</button>
         <button class="tiny" type="button" onclick="hideRecipeModal()">סגור</button>
       </div>
@@ -269,11 +310,18 @@
 
     <div class="field">
       <label>קישור (אופציונלי)</label>
-      <input id="recipeUrlInput" placeholder="https://...">
+      <div class="inline">
+        <input id="recipeUrlInput" placeholder="https://...">
+        <button class="tiny" type="button" onclick="pasteUrl()">הדבק קישור</button>
+        <button class="tiny" type="button" onclick="openRecipeLink()">פתח קישור</button>
+      </div>
     </div>
 
     <div class="field">
       <label>מתכון</label>
+      <div class="inline">
+        <button class="tiny" type="button" onclick="pasteRecipe()">הדבק מתכון</button>
+      </div>
       <textarea id="recipeTextInput" placeholder="הדבק/כתוב כאן את המתכון..."></textarea>
       <div id="pasteWarn" class="warn">לא ניתן להדביק אוטומטית כאן. הדבק ידנית לתוך התיבה (לחיצה ארוכה → Paste).</div>
     </div>
@@ -281,6 +329,22 @@
 </div>
 
 <script>
+  // ===== TABS =====
+  function showTab(key){
+    document.querySelectorAll(".tabbtn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+
+    const map = {
+      log: {btn:0, view:"view-log"},
+      kids:{btn:1, view:"view-kids"},
+      dishes:{btn:2, view:"view-dishes"},
+      data:{btn:3, view:"view-data"}
+    };
+    const m = map[key] || map.log;
+    document.querySelectorAll(".tabbtn")[m.btn].classList.add("active");
+    document.getElementById(m.view).classList.add("active");
+  }
+
   // ===== DATA =====
   const KM="meals", KK="kids", KO="mealOptions";
 
@@ -294,7 +358,6 @@
   function normalizeMealOptions(raw){
     if(!raw) return [];
     if(Array.isArray(raw) && raw.length && typeof raw[0] === "string"){
-      // migrate old format ["פסטה", "אורז"] -> [{dish:"פסטה",...}]
       return raw.map(d => ({ dish: d, recipeText: "", recipeUrl: "" }));
     }
     if(Array.isArray(raw) && (raw.length === 0 || typeof raw[0] === "object")){
@@ -382,10 +445,8 @@
     if(next === oldName) return;
     if(getDishNames().includes(next)) return alert("כבר קיימת מנה בשם הזה");
 
-    // update option name
     mealOptions = mealOptions.map(o => o.dish === oldName ? ({...o, dish: next}) : o);
 
-    // update meals references
     meals = meals.map(m => {
       if(m.split){
         const km = {...(m.kidMeals||{})};
@@ -426,7 +487,6 @@
       const selectedKids = kids.filter(k => document.getElementById("cb_"+k)?.checked);
       if(!meal) return alert("בחר מנה");
       if(!selectedKids.length) return alert("סמן לפחות ילד/ה אחד/ת");
-
       meals.push({id: uid(), date, type, meal, kids: selectedKids});
     } else {
       const kidMeals = {};
@@ -472,7 +532,7 @@
     mealSelect.value = pick;
   }
 
-  // ===== Recipe Modal Logic =====
+  // ===== Recipe Modal =====
   let recipeDish = null;
 
   function openRecipeModal(dish){
@@ -491,7 +551,6 @@
   }
 
   function closeRecipeModal(e){
-    // click on backdrop closes
     if(e.target === recipeBackdrop) hideRecipeModal();
   }
 
@@ -504,6 +563,20 @@
       }
       const txt = await navigator.clipboard.readText();
       if(txt) recipeTextInput.value = txt;
+    }catch(err){
+      pasteWarn.style.display = "block";
+    }
+  }
+
+  async function pasteUrl(){
+    pasteWarn.style.display = "none";
+    try{
+      if(!navigator.clipboard || !navigator.clipboard.readText){
+        pasteWarn.style.display = "block";
+        return;
+      }
+      const txt = await navigator.clipboard.readText();
+      if(txt) recipeUrlInput.value = txt.trim();
     }catch(err){
       pasteWarn.style.display = "block";
     }
@@ -532,7 +605,7 @@
 
     save();
     hideRecipeModal();
-    renderMealOptionsManager(); // מספיק לעדכן את הרשימה
+    renderMealOptionsManager();
   }
 
   // ===== RENDER =====
@@ -574,7 +647,6 @@
   }
 
   function renderSelectorsAndChecks(){
-    // select ראשי
     mealSelect.innerHTML = "";
     getDishNames().forEach(m => {
       const opt = document.createElement("option");
@@ -582,7 +654,6 @@
       mealSelect.appendChild(opt);
     });
 
-    // צ'קבוקס "מי אכל"
     sameKids.innerHTML = "";
     kids.forEach(k => {
       const row = document.createElement("div");
@@ -594,7 +665,6 @@
       sameKids.appendChild(row);
     });
 
-    // פיצול
     splitKids.innerHTML = "";
     kids.forEach(k => {
       const row = document.createElement("div");
@@ -615,7 +685,6 @@
 
   function renderHistory(){
     mealList.innerHTML = "";
-
     meals.forEach(m => {
       let text = "";
       if(m.split){
@@ -699,7 +768,6 @@
   const today = new Date().toISOString().slice(0,10);
   dateInput.value = today;
   weekEndDate.value = today;
-
   weekEndDate.addEventListener("change", renderAll);
 
   save();
