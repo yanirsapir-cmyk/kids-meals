@@ -33,8 +33,8 @@
     }
 
     .spacer{margin-bottom:14px}
-
     .field{margin-top:10px}
+
     input,select{
       width:100%; padding:10px 12px; font-size:16px;
       border-radius:10px; border:1px solid var(--border);
@@ -55,19 +55,29 @@
     .primary{background:var(--primary); color:#fff}
     .danger{background:var(--danger); color:#fff}
     .ghost{background:#eef2ff; color:#1e40af}
+
     .iconbtn{
       background:#f3f4f6; color:#111827;
       padding:8px 10px; border-radius:10px; border:1px solid var(--border);
       font-weight:800;
+      line-height:1;
     }
     .iconbtn.dangerish{
       background:#f3f4f6; color:#111827; border:1px solid var(--border);
     }
 
-    /* רשימות */
+    /* רשימות רגילות (למשל מנות + שבוע) */
     ul{list-style:none;padding:0;margin:10px 0 0}
+    li{
+      display:flex; justify-content:space-between; gap:10px;
+      background:#fff; border:1px solid var(--border);
+      border-radius:12px; padding:10px; margin-bottom:8px;
+      align-items:center;
+    }
+    li span{flex:1}
+    .btn-group{display:flex; gap:8px; align-items:center}
 
-    /* ✅ מבנה חדש: מסגרת לטקסט + כפתור חיצוני */
+    /* ✅ מבנה: מסגרת לטקסט + כפתור חיצוני (רק לילדים/היסטוריה) */
     .listrow{
       display:flex;
       gap:10px;
@@ -92,8 +102,6 @@
     .btncol .btn{
       height:100%;
     }
-
-    .btn-group{display:flex; gap:8px; align-items:center}
 
     /* צ'קבוקסים מיושרים יפה */
     .checks{
@@ -386,6 +394,7 @@
     });
   }
 
+  // ✅ נשאר "li" רגיל עם מסגרת + כפתורים בשורה (כמו שהיה טוב)
   function renderMealOptionsManager(){
     mealsOptionsList.innerHTML = "";
     const sorted = [...mealOptions].sort((a,b)=>a.localeCompare(b,"he"));
@@ -443,6 +452,7 @@
     });
   }
 
+  // ✅ היסטוריה: מסגרת לטקסט + כפתור מחיקה חיצוני
   function renderHistory(){
     mealList.innerHTML = "";
 
