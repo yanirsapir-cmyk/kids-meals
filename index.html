@@ -74,19 +74,6 @@
 
     .note{font-size:13px;color:var(--muted);margin-top:6px}
 
-    /* ✅ שורת סנכרון בולטת (שתראה תמיד) */
-    .syncbar{
-      margin-top:10px;
-      padding:10px 12px;
-      border-radius:14px;
-      border:1px solid var(--border);
-      background:#f8fafc;
-      font-weight:900;
-      font-size:13px;
-      color:#0f172a;
-      display:block;
-    }
-
     .checks{display:flex; flex-direction:column; gap:10px; margin-top:8px;}
     .checkrow{
       display:flex; align-items:center; gap:10px;
@@ -174,7 +161,9 @@
       font-weight:900;
       white-space:nowrap;
     }
+
     .entry-bottom{font-size:13px; font-weight:900}
+
     .bottom-normal{
       display:flex;
       align-items:flex-start;
@@ -272,9 +261,6 @@
   <section class="card">
     <h2>רישום ארוחה</h2>
 
-    <!-- ✅ שורת סנכרון שתראה תמיד -->
-    <div id="syncStatus" class="syncbar">סטטוס סנכרון: —</div>
-
     <div class="field">
       <label>תאריך</label>
       <input type="date" id="dateInput">
@@ -320,6 +306,8 @@
     <div class="field">
       <button class="btn primary" type="button" onclick="saveMeal()">שמירה</button>
     </div>
+
+    <div class="note" id="syncStatus"></div>
   </section>
 
   <section class="card">
@@ -436,11 +424,60 @@
   </div>
 </div>
 
-<script>
-  // ===== Detect iOS =====
-  var __isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+<!-- Edit report modal -->
+<div id="editBackdrop" class="modal-backdrop" onclick="closeEditModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">✏️ עריכת דיווח</div>
+      <div class="modal-actions">
+        <button class="tiny" type="button" onclick="saveEditedReport()">שמירה</button>
+        <button class="tiny" type="button" onclick="hideEditModal()">סגור</button>
+      </div>
+    </div>
 
-  // ===== iOS Safari לפעמים נתקע בגלל SW ישן — מבטלים SW רק ב-iOS =====
+    <div class="field">
+      <label>תאריך</label>
+      <input type="date" id="editDate">
+    </div>
+
+    <div class="field">
+      <label>סוג ארוחה</label>
+      <select id="editType" onchange="renderEditSelectors()">
+        <option value="בוקר">בוקר</option>
+        <option value="צהריים">צהריים</option>
+        <option value="ערב">ערב</option>
+        <option value="ביניים">ביניים</option>
+      </select>
+    </div>
+
+    <div class="field checkrow" style="justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <input type="checkbox" id="editSame" onchange="toggleEditMode()">
+        <strong>אותה ארוחה לכולם</strong>
+      </div>
+    </div>
+
+    <div id="editSameMode">
+      <div class="field">
+        <label>מנה</label>
+        <select id="editMealSelect"></select>
+      </div>
+
+      <h3>מי אכל?</h3>
+      <div id="editKidsChecks" class="checks"></div>
+    </div>
+
+    <div id="editSplitMode" style="display:none;">
+      <h3>בחירה נפרדת לכל ילד</h3>
+      <div id="editSplitKids" class="checks"></div>
+      <div class="note">במצב מפוצל: מי שלא מסומן – לא נכלל בדיווח.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ===== iOS: מונעים תקלות SW ישן =====
+  var __isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
   if (__isIOS && navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
     try {
       navigator.serviceWorker.getRegistrations().then(function(regs){
@@ -449,12 +486,20 @@
     } catch(e){}
   }
 
-  // ===== Google Sync =====
+  // ===== Sync Config =====
   var SYNC_URL = "https://script.google.com/macros/s/AKfycby8gDkzATtKwGFqFguvvTcqZ0jC1FCADAFWw1PLoOzVAmV1UwuZiIPkC1YNhmD_4pi4/exec";
-  var SYNC_TOKEN = "CHANGE_ME_12345";
+  var SYNC_TOKEN = "CHANGE_ME_12345"; // תחליפו בהמשך לסיסמה אמיתית
+  var DEVICE_NAME = (function(){
+    var saved = localStorage.getItem("deviceName");
+    if(saved) return saved;
+    var guess = __isIOS ? "Wife" : "Yanir";
+    localStorage.setItem("deviceName", guess);
+    return guess;
+  })();
 
-  // ✅ מכשיר: אייפון = Wife, אנדרואיד שלך = Yanir
-  var DEVICE_NAME = __isIOS ? "WIFE" : "Yanir";
+  var META_KEY = "cloudMeta";
+  var syncTimer = null;
+  var syncLoadedOnce = false;
 
   function setSyncMsg(msg){
     var el = document.getElementById("syncStatus");
@@ -465,84 +510,116 @@
     try { return JSON.parse(s); } catch(e){ return fallback; }
   }
 
-  function localHasAnyData(){
-    var kids = safeJSONParse(localStorage.getItem("kids") || "[]", []);
-    var dishes = safeJSONParse(localStorage.getItem("dishes") || "[]", []);
-    var logs = safeJSONParse(localStorage.getItem("logs") || "[]", []);
-    return (kids.length || dishes.length || logs.length) ? true : false;
+  function getLocalMeta(){
+    return safeJSONParse(localStorage.getItem(META_KEY) || "null", { updatedAt:0, updatedBy:"" });
+  }
+  function setLocalMeta(meta){
+    localStorage.setItem(META_KEY, JSON.stringify(meta || { updatedAt:0, updatedBy:"" }));
   }
 
-  var syncTimer = null;
-
-  function doSyncSend(){
-    var payload = {
+  function localPayload(){
+    return {
       kids: safeJSONParse(localStorage.getItem("kids") || "[]", []),
       dishes: safeJSONParse(localStorage.getItem("dishes") || "[]", []),
       logs: safeJSONParse(localStorage.getItem("logs") || "[]", [])
     };
-    var dataStr = JSON.stringify(payload);
-
-    var url = SYNC_URL +
-      "?token=" + encodeURIComponent(SYNC_TOKEN) +
-      "&write=1" +
-      "&by=" + encodeURIComponent(DEVICE_NAME) +
-      "&data=" + encodeURIComponent(dataStr);
-
-    return fetch(url, { method: "GET" });
   }
 
+  function doFetchJSON(url){
+    return fetch(url, { cache:"no-store" }).then(function(r){ return r.json(); });
+  }
+
+  function applyRemote(remote, meta){
+    localStorage.setItem("kids", JSON.stringify(remote.kids || []));
+    localStorage.setItem("dishes", JSON.stringify(remote.dishes || []));
+    localStorage.setItem("logs", JSON.stringify(remote.logs || []));
+    setLocalMeta(meta || { updatedAt:0, updatedBy:"" });
+
+    // חשוב: גם בזיכרון של הדף
+    kids = (remote.kids || []);
+    dishes = normalizeDishes(remote.dishes || []);
+    logs = (remote.logs || []);
+    renderAll();
+  }
+
+  // טוען מהענן בלי reload (מונע לופים באייפון)
+  function syncLoad(force){
+    if(syncLoadedOnce && !force) return;
+    syncLoadedOnce = true;
+
+    // Yanir: אם יש כבר נתונים מקומיים, לא מושכים אוטומטית (כדי לא לדרוס)
+    if(!force && DEVICE_NAME === "Yanir"){
+      var p = localPayload();
+      if((p.kids && p.kids.length) || (p.dishes && p.dishes.length) || (p.logs && p.logs.length)){
+        setSyncMsg("מקומי ("+DEVICE_NAME+")");
+        return;
+      }
+    }
+
+    setSyncMsg("טוען מהענן...");
+    doFetchJSON(SYNC_URL + "?token=" + encodeURIComponent(SYNC_TOKEN))
+      .then(function(j){
+        if(!j || !j.ok) throw new Error("bad");
+        if(!j.data){
+          setSyncMsg("אין נתונים בענן");
+          return;
+        }
+        var remote = safeJSONParse(j.data, null);
+        if(!remote) throw new Error("bad json");
+        applyRemote(remote, j.meta);
+        setSyncMsg("נטען מהענן ✅");
+      })
+      .catch(function(){
+        setSyncMsg("טעינה מהענן נכשלה ❌");
+      });
+  }
+
+  function doSyncSend(){
+    var payloadStr = JSON.stringify(localPayload());
+    var url = SYNC_URL
+      + "?token=" + encodeURIComponent(SYNC_TOKEN)
+      + "&write=1"
+      + "&by=" + encodeURIComponent(DEVICE_NAME)
+      + "&data=" + encodeURIComponent(payloadStr);
+    return doFetchJSON(url);
+  }
+
+  // Yanir מנצח: אם בענן יש עדכון חדש של Yanir, מכשיר שאינו Yanir לא ידרוס – ימשוך במקום.
   function syncSave(){
     try{
       if(syncTimer) clearTimeout(syncTimer);
       syncTimer = setTimeout(function(){
-        setSyncMsg("סטטוס סנכרון: מסנכרן…");
-        doSyncSend().then(function(){
-          setSyncMsg("סטטוס סנכרון: סונכרן ✅");
-        }).catch(function(){
-          setSyncMsg("סטטוס סנכרון: סנכרון נכשל ❌");
-        });
+        setSyncMsg("מסנכרן...");
+
+        doFetchJSON(SYNC_URL + "?token=" + encodeURIComponent(SYNC_TOKEN) + "&meta=1")
+          .then(function(metaResp){
+            var remoteMeta = (metaResp && metaResp.meta) ? metaResp.meta : { updatedAt:0, updatedBy:"" };
+            var localMeta = getLocalMeta();
+
+            if(DEVICE_NAME !== "Yanir" &&
+               (remoteMeta.updatedAt||0) > (localMeta.updatedAt||0) &&
+               String(remoteMeta.updatedBy||"") === "Yanir"){
+              setSyncMsg("יש עדכון חדש של Yanir — מושך...");
+              syncLoadedOnce = false;
+              syncLoad(true);
+              return;
+            }
+
+            return doSyncSend().then(function(w){
+              if(w && w.ok){
+                setLocalMeta(w.meta || remoteMeta);
+                setSyncMsg("סונכרן ✅");
+              } else {
+                setSyncMsg("סנכרון נכשל ❌");
+              }
+            });
+          })
+          .catch(function(){
+            setSyncMsg("סנכרון נכשל ❌");
+          });
       }, 500);
-    }catch(e){
-      setSyncMsg("סטטוס סנכרון: סנכרון נכשל ❌");
-    }
-  }
-
-  function syncLoad(){
-    try{
-      // ✅ רק במכשיר שלך (Yanir) אנחנו לא רוצים “למשוך” אם כבר יש לו נתונים.
-      // באייפון תמיד מושכים מהענן כדי לקבל את המנות/היסטוריה.
-      if(!__isIOS && DEVICE_NAME === "Yanir" && localHasAnyData()) {
-        setSyncMsg("סטטוס סנכרון: מקומי (Yanir) ✅");
-        return;
-      }
-
-      setSyncMsg("סטטוס סנכרון: טוען מהענן…");
-
-      fetch(SYNC_URL + "?token=" + encodeURIComponent(SYNC_TOKEN), { method: "GET" })
-        .then(function(res){ return res.json(); })
-        .then(function(j){
-          if(!j || !j.ok || !j.data) {
-            setSyncMsg("סטטוס סנכרון: אין נתונים בענן");
-            return;
-          }
-          var remote = safeJSONParse(j.data, null);
-          if(!remote) {
-            setSyncMsg("סטטוס סנכרון: נתונים בענן לא תקינים");
-            return;
-          }
-
-          localStorage.setItem("kids", JSON.stringify(remote.kids || []));
-          localStorage.setItem("dishes", JSON.stringify(remote.dishes || []));
-          localStorage.setItem("logs", JSON.stringify(remote.logs || []));
-
-          setSyncMsg("סטטוס סנכרון: נטען מהענן ✅");
-          location.reload();
-        })
-        .catch(function(){
-          setSyncMsg("סטטוס סנכרון: טעינה מהענן נכשלה ❌");
-        });
     } catch(e){
-      setSyncMsg("סטטוס סנכרון: טעינה מהענן נכשלה ❌");
+      setSyncMsg("סנכרון נכשל ❌");
     }
   }
 
@@ -588,12 +665,14 @@
     return [];
   }
 
-  var kids = safeJSONParse(localStorage.getItem(KIDS_KEY), null);
-  if(!kids) kids = ["מיקה","עומר"];
+  function safeLoadDefault(key, def){
+    var v = safeJSONParse(localStorage.getItem(key), null);
+    return v==null ? def : v;
+  }
 
-  var dishes = normalizeDishes(safeJSONParse(localStorage.getItem(DISHES_KEY), null));
-  var logs = safeJSONParse(localStorage.getItem(LOGS_KEY), null);
-  if(!logs) logs = [];
+  var kids = safeLoadDefault(KIDS_KEY, ["מיקה","עומר"]);
+  var dishes = normalizeDishes(safeLoadDefault(DISHES_KEY, []));
+  var logs = safeLoadDefault(LOGS_KEY, []);
 
   function saveAll(){
     localStorage.setItem(KIDS_KEY, JSON.stringify(kids));
@@ -968,12 +1047,20 @@
     var actions = document.createElement("div");
     actions.className = "actionrow";
 
+    var editBtn = document.createElement("button");
+    editBtn.className = "iconbtn";
+    editBtn.type = "button";
+    editBtn.title = "ערוך";
+    editBtn.textContent = "✏️";
+    editBtn.onclick = function(){ openEditModal(r.id); };
+
     var del = document.createElement("button");
     del.className = "delbtn";
     del.type = "button";
     del.textContent = "מחק";
     del.onclick = function(){ deleteReport(r.id); };
 
+    actions.appendChild(editBtn);
     actions.appendChild(del);
 
     top.appendChild(typeP);
@@ -1328,7 +1415,168 @@
   }
   window.saveRecipe = saveRecipe;
 
-  // ===== Render all & init =====
+  // ===== Edit report modal =====
+  var editTargetId = null;
+
+  function showEditModal(){
+    document.getElementById("editBackdrop").style.display = "flex";
+  }
+  function hideEditModal(){
+    document.getElementById("editBackdrop").style.display = "none";
+    editTargetId = null;
+  }
+  window.hideEditModal = hideEditModal;
+
+  function closeEditModal(e){
+    if(e.target === document.getElementById("editBackdrop")) hideEditModal();
+  }
+  window.closeEditModal = closeEditModal;
+
+  function getLogById(id){
+    for(var i=0;i<logs.length;i++){
+      if(logs[i].id === id) return logs[i];
+    }
+    return null;
+  }
+
+  function toggleEditMode(){
+    var same = document.getElementById("editSame").checked;
+    document.getElementById("editSameMode").style.display = same ? "block" : "none";
+    document.getElementById("editSplitMode").style.display = same ? "none" : "block";
+  }
+  window.toggleEditMode = toggleEditMode;
+
+  function renderEditSelectors(){
+    var type = document.getElementById("editType").value;
+    var available = getDishesForType(type);
+
+    var sel = document.getElementById("editMealSelect");
+    var current = sel.value;
+    sel.innerHTML = "";
+    available.forEach(function(name){
+      var o = document.createElement("option");
+      o.value = name; o.textContent = name;
+      sel.appendChild(o);
+    });
+    if(current && available.indexOf(current)>=0) sel.value = current;
+
+    // same kids checks
+    var host = document.getElementById("editKidsChecks");
+    host.innerHTML = "";
+    kids.forEach(function(k){
+      var row = document.createElement("div");
+      row.className = "checkrow";
+      row.innerHTML = '<input type="checkbox" id="ek_'+cssSafe(k)+'" checked><div style="font-weight:900;">'+escapeHtml(k)+'</div>';
+      host.appendChild(row);
+    });
+
+    // split rows: checkbox + select
+    var shost = document.getElementById("editSplitKids");
+    shost.innerHTML = "";
+    kids.forEach(function(k){
+      var row2 = document.createElement("div");
+      row2.className = "checkrow";
+      row2.innerHTML =
+        '<input type="checkbox" id="es_on_'+cssSafe(k)+'" checked>'+
+        '<div style="font-weight:900; min-width:90px;">'+escapeHtml(k)+'</div>'+
+        '<select id="es_sel_'+cssSafe(k)+'"></select>';
+      var s2 = row2.querySelector("select");
+      available.forEach(function(name){
+        var o2 = document.createElement("option");
+        o2.value = name; o2.textContent = name;
+        s2.appendChild(o2);
+      });
+      shost.appendChild(row2);
+    });
+  }
+  window.renderEditSelectors = renderEditSelectors;
+
+  function openEditModal(id){
+    var r = getLogById(id);
+    if(!r) return;
+
+    editTargetId = id;
+
+    document.getElementById("editDate").value = r.date || todayISO();
+    document.getElementById("editType").value = r.type || "ערב";
+    document.getElementById("editSame").checked = !!r.same;
+
+    renderEditSelectors();
+    toggleEditMode();
+
+    var type = document.getElementById("editType").value;
+    var available = getDishesForType(type);
+
+    if(r.same){
+      if(r.meal && available.indexOf(r.meal)>=0) document.getElementById("editMealSelect").value = r.meal;
+      kids.forEach(function(k){
+        var cb = document.getElementById("ek_"+cssSafe(k));
+        if(cb) cb.checked = (r.kids || []).indexOf(k)>=0;
+      });
+    } else {
+      var km = r.kidMeals || {};
+      kids.forEach(function(k){
+        var on = document.getElementById("es_on_"+cssSafe(k));
+        var sel = document.getElementById("es_sel_"+cssSafe(k));
+        if(on) on.checked = (km[k] != null);
+        if(sel && km[k] && available.indexOf(km[k])>=0) sel.value = km[k];
+      });
+    }
+
+    showEditModal();
+  }
+  window.openEditModal = openEditModal;
+
+  function saveEditedReport(){
+    if(!editTargetId) return;
+    var r = getLogById(editTargetId);
+    if(!r) return;
+
+    var date = document.getElementById("editDate").value;
+    var type = document.getElementById("editType").value;
+    if(!date) return alert("בחר תאריך");
+
+    var same = document.getElementById("editSame").checked;
+
+    if(same){
+      var meal = document.getElementById("editMealSelect").value;
+      if(!meal) return alert("בחר מנה");
+
+      var selectedKids = [];
+      kids.forEach(function(k){
+        var cb = document.getElementById("ek_"+cssSafe(k));
+        if(cb && cb.checked) selectedKids.push(k);
+      });
+      if(!selectedKids.length) return alert("סמן לפחות ילד/ה אחד/ת");
+
+      r.date = date; r.type = type; r.same = true;
+      r.meal = meal; r.kids = selectedKids;
+      delete r.kidMeals;
+    } else {
+      var km = {};
+      kids.forEach(function(k){
+        var on = document.getElementById("es_on_"+cssSafe(k));
+        var sel = document.getElementById("es_sel_"+cssSafe(k));
+        if(on && on.checked){
+          var v = sel ? sel.value : "";
+          if(!v) return;
+          km[k] = v;
+        }
+      });
+      if(!Object.keys(km).length) return alert("בחר לפחות ילד/ה אחד/ת");
+
+      r.date = date; r.type = type; r.same = false;
+      r.kidMeals = km;
+      delete r.meal; delete r.kids;
+    }
+
+    saveAll();
+    hideEditModal();
+    renderAll();
+  }
+  window.saveEditedReport = saveEditedReport;
+
+  // ===== Init + Render all =====
   function renderAll(){
     renderKids();
     renderDishes();
@@ -1341,7 +1589,7 @@
   document.getElementById("weekEndDate").value = todayISO();
 
   renderAll();
-  syncLoad();
+  syncLoad(false);
 </script>
 </body>
 </html>
