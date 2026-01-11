@@ -5,27 +5,22 @@ const CORE = [
   "./index.html",
   "./manifest.webmanifest",
   "./icon-192.png",
-  "./icon-512.png"
+  "./icon-512.png",
 ];
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(CORE))
-  );
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(CORE)));
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(keys.map((k) => (k !== CACHE ? caches.delete(k) : null)));
-    await self.clients.claim();
-  })());
+  event.waitUntil(self.clients.claim());
 });
 
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
+
   if (url.origin !== location.origin) return;
 
   if (url.pathname.endsWith("/") || url.pathname.endsWith("/index.html")) {
