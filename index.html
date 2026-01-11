@@ -74,6 +74,19 @@
 
     .note{font-size:13px;color:var(--muted);margin-top:6px}
 
+    /* ✅ שורת סנכרון בולטת (שתראה תמיד) */
+    .syncbar{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:#f8fafc;
+      font-weight:900;
+      font-size:13px;
+      color:#0f172a;
+      display:block;
+    }
+
     .checks{display:flex; flex-direction:column; gap:10px; margin-top:8px;}
     .checkrow{
       display:flex; align-items:center; gap:10px;
@@ -161,6 +174,26 @@
       font-weight:900;
       white-space:nowrap;
     }
+    .entry-bottom{font-size:13px; font-weight:900}
+    .bottom-normal{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .mealtext{
+      flex:1; min-width:0;
+      text-align:right;
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      font-weight:900;
+    }
+    .kidstext{
+      flex:1; min-width:0;
+      text-align:left;
+      font-weight:900;
+      color:#374151;
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
 
     .splitlist{display:flex; flex-direction:column; gap:4px;}
     .splitline{
@@ -221,38 +254,26 @@
     }
     .warn{color:var(--danger); font-size:13px; margin-top:8px; display:none;}
 
-    .errbox{
-      background:#fee2e2;
-      border:1px solid #fecaca;
-      color:#991b1b;
-      padding:10px 12px;
-      border-radius:14px;
-      margin:0 0 12px;
-      font-weight:900;
-      display:none;
-      direction:ltr;
-      white-space:pre-wrap;
-    }
-
     @media(min-width:700px){ body{max-width:860px;margin:auto} }
   </style>
 </head>
 
 <body>
-<div id="errbox" class="errbox"></div>
-
 <h1>🍽️ ארוחות הילדים</h1>
 
 <div class="tabs">
-  <button id="tab-log" class="tabbtn active" type="button">רישום</button>
-  <button id="tab-kids" class="tabbtn" type="button">ניהול ילדים</button>
-  <button id="tab-dishes" class="tabbtn" type="button">ניהול מנות</button>
-  <button id="tab-data" class="tabbtn" type="button">נתונים</button>
+  <button class="tabbtn active" type="button" onclick="showTab('log')">רישום</button>
+  <button class="tabbtn" type="button" onclick="showTab('kids')">ניהול ילדים</button>
+  <button class="tabbtn" type="button" onclick="showTab('dishes')">ניהול מנות</button>
+  <button class="tabbtn" type="button" onclick="showTab('data')">נתונים</button>
 </div>
 
 <section id="view-log" class="view active">
   <section class="card">
     <h2>רישום ארוחה</h2>
+
+    <!-- ✅ שורת סנכרון שתראה תמיד -->
+    <div id="syncStatus" class="syncbar">סטטוס סנכרון: —</div>
 
     <div class="field">
       <label>תאריך</label>
@@ -261,7 +282,7 @@
 
     <div class="field">
       <label>סוג ארוחה</label>
-      <select id="mealType">
+      <select id="mealType" onchange="renderLogSelectors()">
         <option value="בוקר">בוקר</option>
         <option value="צהריים">צהריים</option>
         <option value="ערב" selected>ערב</option>
@@ -271,7 +292,7 @@
 
     <div class="field checkrow" style="justify-content:space-between;">
       <div style="display:flex;align-items:center;gap:10px;">
-        <input type="checkbox" id="sameForAll" checked>
+        <input type="checkbox" id="sameForAll" checked onchange="toggleMode()">
         <strong>אותה ארוחה לכולם</strong>
       </div>
     </div>
@@ -281,7 +302,7 @@
         <label>מנה</label>
         <div class="inline">
           <select id="mealSelect"></select>
-          <button class="btn ghost" type="button" id="btnSuggest">תן לי רעיון</button>
+          <button class="btn ghost" type="button" onclick="suggestMeal()">תן לי רעיון</button>
         </div>
         <div class="note">הבחירה מסוננת לפי סוג הארוחה (אם הגדרת למנה סוגים).</div>
       </div>
@@ -297,10 +318,8 @@
     </div>
 
     <div class="field">
-      <button class="btn primary" type="button" id="btnSaveMeal">שמירה</button>
+      <button class="btn primary" type="button" onclick="saveMeal()">שמירה</button>
     </div>
-
-    <div class="note" id="syncStatus"></div>
   </section>
 
   <section class="card">
@@ -319,7 +338,7 @@
     <h2>ניהול ילדים</h2>
     <div class="inline">
       <input id="newKidInput" placeholder="שם ילד/ה">
-      <button class="btn primary" type="button" id="btnAddKid">הוסף</button>
+      <button class="btn primary" type="button" onclick="addKid()">הוסף</button>
     </div>
     <ul id="kidsList"></ul>
   </section>
@@ -330,7 +349,7 @@
     <h2>ניהול מנות</h2>
     <div class="inline">
       <input id="newDishInput" placeholder="שם מנה">
-      <button class="btn primary" type="button" id="btnAddDish">הוסף</button>
+      <button class="btn primary" type="button" onclick="addDish()">הוסף</button>
     </div>
     <div class="note">מחיקה כאן מסירה מהמאגר בלבד (לא מוחקת היסטוריה).</div>
     <ul id="dishesList"></ul>
@@ -347,10 +366,10 @@
 
     <div class="note" style="margin-top:6px;">סינון לפי סוג ארוחה</div>
     <div class="filters" id="typeFilters">
-      <label class="filter"><input type="checkbox" value="בוקר" checked> בוקר</label>
-      <label class="filter"><input type="checkbox" value="צהריים" checked> צהריים</label>
-      <label class="filter"><input type="checkbox" value="ערב" checked> ערב</label>
-      <label class="filter"><input type="checkbox" value="ביניים" checked> ביניים</label>
+      <label class="filter"><input type="checkbox" value="בוקר" checked onchange="renderData()"> בוקר</label>
+      <label class="filter"><input type="checkbox" value="צהריים" checked onchange="renderData()"> צהריים</label>
+      <label class="filter"><input type="checkbox" value="ערב" checked onchange="renderData()"> ערב</label>
+      <label class="filter"><input type="checkbox" value="ביניים" checked onchange="renderData()"> ביניים</label>
     </div>
 
     <div id="historyWrap"></div>
@@ -359,7 +378,7 @@
   <section class="card">
     <h2>שבוע אחרון</h2>
     <label>תאריך סיום שבוע (כולל)</label>
-    <input type="date" id="weekEndDate">
+    <input type="date" id="weekEndDate" onchange="renderData()">
 
     <div id="weekWrap" style="margin-top:10px;"></div>
 
@@ -370,23 +389,24 @@
   <section class="card">
     <h2>כלי בדיקה</h2>
     <div class="note">מוחק רק את ההיסטוריה (רישומי ארוחות). לא מוחק ילדים/מנות/מתכונים.</div>
-    <button class="btn danger" type="button" id="btnClearHistory">מחק היסטוריה</button>
+    <button class="btn danger" type="button" onclick="clearHistoryOnly()">מחק היסטוריה</button>
   </section>
 
   <section class="card">
     <h2>איפוס נתונים</h2>
     <div class="note">זה מוחק הכל מהמכשיר (ילדים/מנות/היסטוריה/מתכונים).</div>
-    <button class="btn danger" type="button" id="btnResetAll">איפוס מלא</button>
+    <button class="btn danger" type="button" onclick="resetAll()">איפוס מלא</button>
   </section>
 </section>
 
-<div id="recipeBackdrop" class="modal-backdrop">
+<!-- Recipe modal -->
+<div id="recipeBackdrop" class="modal-backdrop" onclick="closeRecipeModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-header">
       <div class="modal-title" id="recipeTitle">מתכון</div>
       <div class="modal-actions">
-        <button class="tiny" type="button" id="btnRecipeSave">שמירה</button>
-        <button class="tiny" type="button" id="btnRecipeClose">סגור</button>
+        <button class="tiny" type="button" onclick="saveRecipe()">שמירה</button>
+        <button class="tiny" type="button" onclick="hideRecipeModal()">סגור</button>
       </div>
     </div>
 
@@ -394,15 +414,15 @@
       <label>קישור (אופציונלי)</label>
       <div class="inline">
         <input id="recipeUrlInput" placeholder="https://...">
-        <button class="tiny" type="button" id="btnPasteUrl">הדבק קישור</button>
-        <button class="tiny" type="button" id="btnOpenUrl">פתח קישור</button>
+        <button class="tiny" type="button" onclick="pasteUrl()">הדבק קישור</button>
+        <button class="tiny" type="button" onclick="openRecipeLink()">פתח קישור</button>
       </div>
     </div>
 
     <div class="field">
       <label>מתכון</label>
       <div class="inline">
-        <button class="tiny" type="button" id="btnPasteRecipe">הדבק מתכון</button>
+        <button class="tiny" type="button" onclick="pasteRecipe()">הדבק מתכון</button>
       </div>
       <textarea id="recipeTextInput" placeholder="הדבק/כתוב כאן את המתכון..."></textarea>
       <div id="pasteWarn" class="warn">אם ההדבקה האוטומטית לא עובדת — הדבק ידנית (לחיצה ארוכה → Paste).</div>
@@ -417,44 +437,39 @@
 </div>
 
 <script>
-  // ===== תיבת שגיאות למסך (כדי שספארי לא "ישתוק") =====
-  window.onerror = function(msg, src, line, col){
-    try{
-      var box = document.getElementById("errbox");
-      box.style.display = "block";
-      box.textContent = "JS ERROR:\n" + msg + "\n" + (src||"") + ":" + (line||"") + ":" + (col||"");
-    }catch(e){}
-    return true;
-  };
+  // ===== Detect iOS =====
+  var __isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+  // ===== iOS Safari לפעמים נתקע בגלל SW ישן — מבטלים SW רק ב-iOS =====
+  if (__isIOS && navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+    try {
+      navigator.serviceWorker.getRegistrations().then(function(regs){
+        regs.forEach(function(r){ try{ r.unregister(); }catch(e){} });
+      }).catch(function(){});
+    } catch(e){}
+  }
 
   // ===== Google Sync =====
   var SYNC_URL = "https://script.google.com/macros/s/AKfycby8gDkzATtKwGFqFguvvTcqZ0jC1FCADAFWw1PLoOzVAmV1UwuZiIPkC1YNhmD_4pi4/exec";
-  var SYNC_TOKEN = "CHANGE_ME_12345"; // חייב להיות זהה למה ששמת ב-Apps Script
-  var MASTER_NAME = "Yanir";
+  var SYNC_TOKEN = "CHANGE_ME_12345";
 
-  // במכשיר אחר (אייפון) תחליף פעם אחת ל-"Reut" ואז זה יישמר
-  var DEVICE_NAME = localStorage.getItem("deviceName") || "Yanir";
+  // ✅ מכשיר: אייפון = Wife, אנדרואיד שלך = Yanir
+  var DEVICE_NAME = __isIOS ? "WIFE" : "Yanir";
 
   function setSyncMsg(msg){
     var el = document.getElementById("syncStatus");
     if(el) el.textContent = msg || "";
   }
+
   function safeJSONParse(s, fallback){
     try { return JSON.parse(s); } catch(e){ return fallback; }
-  }
-
-  function getLocalMeta(){
-    return safeJSONParse(localStorage.getItem("syncMeta") || "{}", {});
-  }
-  function setLocalMeta(meta){
-    localStorage.setItem("syncMeta", JSON.stringify(meta || {}));
   }
 
   function localHasAnyData(){
     var kids = safeJSONParse(localStorage.getItem("kids") || "[]", []);
     var dishes = safeJSONParse(localStorage.getItem("dishes") || "[]", []);
     var logs = safeJSONParse(localStorage.getItem("logs") || "[]", []);
-    return !!(kids.length || dishes.length || logs.length);
+    return (kids.length || dishes.length || logs.length) ? true : false;
   }
 
   var syncTimer = null;
@@ -473,66 +488,62 @@
       "&by=" + encodeURIComponent(DEVICE_NAME) +
       "&data=" + encodeURIComponent(dataStr);
 
-    return fetch(url).then(function(r){ return r.json(); });
+    return fetch(url, { method: "GET" });
   }
 
   function syncSave(){
-    // רק MASTER דוחף לענן
-    if(DEVICE_NAME !== MASTER_NAME) return;
-
     try{
       if(syncTimer) clearTimeout(syncTimer);
       syncTimer = setTimeout(function(){
-        setSyncMsg("מסנכרן...");
-        doSyncSend().then(function(j){
-          if(j && j.ok && j.meta){
-            setLocalMeta(j.meta);
-          }
-          setSyncMsg("סונכרן ✅");
+        setSyncMsg("סטטוס סנכרון: מסנכרן…");
+        doSyncSend().then(function(){
+          setSyncMsg("סטטוס סנכרון: סונכרן ✅");
         }).catch(function(){
-          setSyncMsg("סנכרון נכשל ❌");
+          setSyncMsg("סטטוס סנכרון: סנכרון נכשל ❌");
         });
       }, 500);
     }catch(e){
-      setSyncMsg("סנכרון נכשל ❌");
+      setSyncMsg("סטטוס סנכרון: סנכרון נכשל ❌");
     }
   }
 
   function syncLoad(){
     try{
-      // MASTER לא נדרס מהענן
-      if(DEVICE_NAME === MASTER_NAME) return;
+      // ✅ רק במכשיר שלך (Yanir) אנחנו לא רוצים “למשוך” אם כבר יש לו נתונים.
+      // באייפון תמיד מושכים מהענן כדי לקבל את המנות/היסטוריה.
+      if(!__isIOS && DEVICE_NAME === "Yanir" && localHasAnyData()) {
+        setSyncMsg("סטטוס סנכרון: מקומי (Yanir) ✅");
+        return;
+      }
 
-      fetch(SYNC_URL + "?token=" + encodeURIComponent(SYNC_TOKEN))
+      setSyncMsg("סטטוס סנכרון: טוען מהענן…");
+
+      fetch(SYNC_URL + "?token=" + encodeURIComponent(SYNC_TOKEN), { method: "GET" })
         .then(function(res){ return res.json(); })
         .then(function(j){
-          if(!j || !j.ok) return;
-
-          // אם אין נתונים בענן — לא נוגעים בכלום
-          if(!j.data) return;
-
+          if(!j || !j.ok || !j.data) {
+            setSyncMsg("סטטוס סנכרון: אין נתונים בענן");
+            return;
+          }
           var remote = safeJSONParse(j.data, null);
-          if(!remote) return;
-
-          var remoteMeta = j.meta || {};
-          var localMeta = getLocalMeta();
-          var remoteUpdated = Number(remoteMeta.updatedAt || 0);
-          var localUpdated = Number(localMeta.updatedAt || 0);
-
-          // אם יש מקומית מידע, ורימוט לא חדש יותר — לא נדרוס
-          if(localHasAnyData() && remoteUpdated <= localUpdated) return;
+          if(!remote) {
+            setSyncMsg("סטטוס סנכרון: נתונים בענן לא תקינים");
+            return;
+          }
 
           localStorage.setItem("kids", JSON.stringify(remote.kids || []));
           localStorage.setItem("dishes", JSON.stringify(remote.dishes || []));
           localStorage.setItem("logs", JSON.stringify(remote.logs || []));
-          setLocalMeta(remoteMeta);
 
-          // בלי reload בספארי – פשוט נרנדר מחדש
-          renderAll();
-          setSyncMsg("נטען מהסנכרון ✅");
+          setSyncMsg("סטטוס סנכרון: נטען מהענן ✅");
+          location.reload();
         })
-        .catch(function(){});
-    } catch(e){}
+        .catch(function(){
+          setSyncMsg("סטטוס סנכרון: טעינה מהענן נכשלה ❌");
+        });
+    } catch(e){
+      setSyncMsg("סטטוס סנכרון: טעינה מהענן נכשלה ❌");
+    }
   }
 
   // ===== App data =====
@@ -598,15 +609,15 @@
     var views = document.querySelectorAll(".view");
     for(var j=0;j<views.length;j++) views[j].classList.remove("active");
 
-    var viewId = "view-log";
-    document.getElementById("tab-log").classList.add("active");
+    var idx = 0, viewId = "view-log";
+    if(key==="kids"){ idx=1; viewId="view-kids"; }
+    else if(key==="dishes"){ idx=2; viewId="view-dishes"; }
+    else if(key==="data"){ idx=3; viewId="view-data"; }
 
-    if(key==="kids"){ viewId="view-kids"; document.getElementById("tab-kids").classList.add("active"); document.getElementById("tab-log").classList.remove("active"); }
-    else if(key==="dishes"){ viewId="view-dishes"; document.getElementById("tab-dishes").classList.add("active"); document.getElementById("tab-log").classList.remove("active"); }
-    else if(key==="data"){ viewId="view-data"; document.getElementById("tab-data").classList.add("active"); document.getElementById("tab-log").classList.remove("active"); }
-
+    btns[idx].classList.add("active");
     document.getElementById(viewId).classList.add("active");
   }
+  window.showTab = showTab;
 
   // ===== UI helpers =====
   function typeClass(t){
@@ -694,6 +705,7 @@
     document.getElementById("sameMode").style.display = same ? "block" : "none";
     document.getElementById("splitMode").style.display = same ? "none" : "block";
   }
+  window.toggleMode = toggleMode;
 
   function renderLogSelectors(){
     var type = document.getElementById("mealType").value;
@@ -735,6 +747,7 @@
 
     renderKidFilters();
   }
+  window.renderLogSelectors = renderLogSelectors;
 
   // ===== Kids CRUD =====
   function addKid(){
@@ -745,6 +758,7 @@
     document.getElementById("newKidInput").value = "";
     saveAll(); renderAll();
   }
+  window.addKid = addKid;
 
   function removeKid(name){
     if(!confirm('למחוק את "'+name+'"?')) return;
@@ -779,6 +793,7 @@
     document.getElementById("newDishInput").value = "";
     saveAll(); renderAll();
   }
+  window.addDish = addDish;
 
   function editDishName(oldName){
     var next = (prompt("שם חדש למנה:", oldName) || "").trim();
@@ -845,6 +860,7 @@
 
     saveAll(); renderAll();
   }
+  window.saveMeal = saveMeal;
 
   function suggestMeal(){
     if(!dishes.length) return;
@@ -879,6 +895,7 @@
 
     document.getElementById("mealSelect").value = mins[Math.floor(Math.random()*mins.length)];
   }
+  window.suggestMeal = suggestMeal;
 
   // ===== Filters & Data render =====
   var kidFilterBuiltFor = "";
@@ -892,7 +909,7 @@
     kids.forEach(function(k){
       var lab = document.createElement("label");
       lab.className = "filter";
-      lab.innerHTML = '<input type="checkbox" value="'+escapeHtml(k)+'"> '+escapeHtml(k);
+      lab.innerHTML = '<input type="checkbox" value="'+escapeHtml(k)+'" onchange="renderData()"> '+escapeHtml(k);
       host.appendChild(lab);
     });
     kidFilterBuiltFor = signature;
@@ -963,10 +980,23 @@
     top.appendChild(actions);
 
     var bottom = document.createElement("div");
+    bottom.className = "entry-bottom";
 
     if(r.same){
-      bottom.innerHTML = '<div class="splitline"><div class="splitkid">מנה:</div><div class="splitmeal">'+escapeHtml(r.meal||"")+'</div></div>' +
-                         '<div class="splitline"><div class="splitkid">ילדים:</div><div class="splitmeal">'+escapeHtml((r.kids||[]).join(", "))+'</div></div>';
+      var wrap = document.createElement("div");
+      wrap.className = "bottom-normal";
+
+      var meal = document.createElement("div");
+      meal.className = "mealtext";
+      meal.textContent = r.meal || "";
+
+      var kidsT = document.createElement("div");
+      kidsT.className = "kidstext";
+      kidsT.textContent = (r.kids || []).join(", ");
+
+      wrap.appendChild(meal);
+      wrap.appendChild(kidsT);
+      bottom.appendChild(wrap);
     } else {
       var list = document.createElement("div");
       list.className = "splitlist";
@@ -1083,24 +1113,28 @@
 
     renderDidYouKnow();
   }
+  window.renderData = renderData;
 
   function deleteReport(id){
     if(!confirm("למחוק דיווח?")) return;
     logs = logs.filter(function(r){ return r.id !== id; });
     saveAll(); renderAll();
   }
+  window.deleteReport = deleteReport;
 
   function clearHistoryOnly(){
     if(!confirm("למחוק את כל ההיסטוריה?")) return;
     logs = [];
     saveAll(); renderAll();
   }
+  window.clearHistoryOnly = clearHistoryOnly;
 
   function resetAll(){
     if(!confirm("איפוס מלא?")) return;
     localStorage.clear();
     location.reload();
   }
+  window.resetAll = resetAll;
 
   // ===== “Did you know?” =====
   function countDishUsageAllTime(){
@@ -1212,11 +1246,18 @@
 
     document.getElementById("recipeBackdrop").style.display = "flex";
   }
+  window.openRecipeModal = openRecipeModal;
 
   function hideRecipeModal(){
     document.getElementById("recipeBackdrop").style.display = "none";
     recipeDishName = null;
   }
+  window.hideRecipeModal = hideRecipeModal;
+
+  function closeRecipeModal(e){
+    if(e.target === document.getElementById("recipeBackdrop")) hideRecipeModal();
+  }
+  window.closeRecipeModal = closeRecipeModal;
 
   function pasteRecipe(){
     document.getElementById("pasteWarn").style.display = "none";
@@ -1233,6 +1274,7 @@
       document.getElementById("pasteWarn").style.display="block";
     }
   }
+  window.pasteRecipe = pasteRecipe;
 
   function pasteUrl(){
     document.getElementById("pasteWarn").style.display = "none";
@@ -1249,6 +1291,7 @@
       document.getElementById("pasteWarn").style.display="block";
     }
   }
+  window.pasteUrl = pasteUrl;
 
   function openRecipeLink(){
     var url = (document.getElementById("recipeUrlInput").value || "").trim();
@@ -1256,6 +1299,7 @@
     try{ window.open(new URL(url).toString(), "_blank"); }
     catch(e){ alert("הקישור לא תקין"); }
   }
+  window.openRecipeLink = openRecipeLink;
 
   function saveRecipe(){
     if(!recipeDishName) return;
@@ -1282,8 +1326,9 @@
     hideRecipeModal();
     renderAll();
   }
+  window.saveRecipe = saveRecipe;
 
-  // ===== init render =====
+  // ===== Render all & init =====
   function renderAll(){
     renderKids();
     renderDishes();
@@ -1292,45 +1337,9 @@
     renderData();
   }
 
-  // ===== Wire events (חשוב לספארי) =====
-  function wire(){
-    document.getElementById("tab-log").onclick = function(){ showTab("log"); };
-    document.getElementById("tab-kids").onclick = function(){ showTab("kids"); };
-    document.getElementById("tab-dishes").onclick = function(){ showTab("dishes"); };
-    document.getElementById("tab-data").onclick = function(){ showTab("data"); };
-
-    document.getElementById("mealType").onchange = function(){ renderLogSelectors(); };
-    document.getElementById("sameForAll").onchange = function(){ toggleMode(); };
-
-    document.getElementById("btnSuggest").onclick = function(){ suggestMeal(); };
-    document.getElementById("btnSaveMeal").onclick = function(){ saveMeal(); };
-    document.getElementById("btnAddKid").onclick = function(){ addKid(); };
-    document.getElementById("btnAddDish").onclick = function(){ addDish(); };
-    document.getElementById("btnClearHistory").onclick = function(){ clearHistoryOnly(); };
-    document.getElementById("btnResetAll").onclick = function(){ resetAll(); };
-
-    document.getElementById("weekEndDate").onchange = function(){ renderData(); };
-
-    // פילטרים: כל שינוי מרנדר
-    document.getElementById("typeFilters").addEventListener("change", function(){ renderData(); });
-    document.getElementById("kidFilters").addEventListener("change", function(){ renderData(); });
-
-    // מודאל מתכון
-    document.getElementById("recipeBackdrop").onclick = function(e){
-      if(e.target === document.getElementById("recipeBackdrop")) hideRecipeModal();
-    };
-    document.getElementById("btnRecipeClose").onclick = function(){ hideRecipeModal(); };
-    document.getElementById("btnRecipeSave").onclick = function(){ saveRecipe(); };
-    document.getElementById("btnPasteRecipe").onclick = function(){ pasteRecipe(); };
-    document.getElementById("btnPasteUrl").onclick = function(){ pasteUrl(); };
-    document.getElementById("btnOpenUrl").onclick = function(){ openRecipeLink(); };
-  }
-
-  // init defaults
   document.getElementById("dateInput").value = todayISO();
   document.getElementById("weekEndDate").value = todayISO();
 
-  wire();
   renderAll();
   syncLoad();
 </script>
