@@ -51,8 +51,16 @@
       background:#fff;
       max-width:100%;
     }
-    /* תיקון ספציפי ל-input date באייפון שמדי פעם "נמתח" */
-    input[type="date"]{max-width:100%; width:100%;}
+
+    /* תיקון יותר אגרסיבי ל-date באייפון */
+    input[type="date"]{
+      width:100%;
+      max-width:100%;
+      display:block;
+      min-width:0;
+    }
+    /* לפעמים iOS מתנהג טוב יותר כשה-wrapper לא מאפשר גלישה */
+    .field{overflow:hidden;}
 
     textarea{min-height:140px; resize:vertical}
 
@@ -312,7 +320,6 @@
       <button class="btn primary" type="button" onclick="saveMeal()">שמירה</button>
     </div>
 
-    <!-- נשאר - אבל עכשיו גם יש כרטיס סנכרון בתחתית -->
     <div class="note" id="syncStatus"></div>
   </section>
 
@@ -326,7 +333,6 @@
     <div id="statsOldest"></div>
   </section>
 
-  <!-- כרטיס סנכרון בתחתית הדף הראשי -->
   <section class="card">
     <h2>🔄 סנכרון</h2>
     <div class="note" id="syncStatusLine"></div>
@@ -338,9 +344,9 @@
       <button class="btn ghost" type="button" onclick="triggerRestore()">טעינת גיבוי</button>
     </div>
 
-    <input id="restoreFile" type="file" accept="application/json" style="display:none" onchange="restoreFromFile(event)">
+    <!-- חשוב: accept כולל גם json וגם application/json כדי שמנהל הקבצים באנדרואיד יזהה -->
+    <input id="restoreFile" type="file" accept=".json,application/json" style="display:none" onchange="restoreFromFile(event)">
 
-    <!-- הערה רק במכשיר שלך (Yanir) -->
     <div class="note" id="syncLocalNote" style="display:none; margin-top:10px;"></div>
   </section>
 </section>
@@ -500,19 +506,18 @@
 </div>
 
 <script>
-  // ===== iOS: מונעים תקלות SW ישן (כמו שהיה אצלכם) =====
-  var __isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  if (__isIOS && navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
-    try {
-      navigator.serviceWorker.getRegistrations().then(function(regs){
-        regs.forEach(function(r){ try{ r.unregister(); }catch(e){} });
-      }).catch(function(){});
-    } catch(e){}
-  }
+  // ===== Service Worker registration (כדי שהכתובת "הרגילה" תתעדכן) =====
+  (function(){
+    if (!("serviceWorker" in navigator)) return;
+    // חשוב: לא לשים querystring כי זה מתבלגן עם GitHub Pages לפעמים
+    navigator.serviceWorker.register("./sw.js").catch(function(){});
+  })();
 
   // ===== Sync Config =====
+  var __isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
   var SYNC_URL = "https://script.google.com/macros/s/AKfycby8gDkzATtKwGFqFguvvTcqZ0jC1FCADAFWw1PLoOzVAmV1UwuZiIPkC1YNhmD_4pi4/exec";
-  var SYNC_TOKEN = "CHANGE_ME_12345"; // תחליפו בהמשך לסיסמה אמיתית
+  var SYNC_TOKEN = "CHANGE_ME_12345";
 
   var DEVICE_NAME = (function(){
     var saved = localStorage.getItem("deviceName");
@@ -536,7 +541,6 @@
     if(tag === "input" || tag === "select" || tag === "textarea") __userTyping = true;
   });
   document.addEventListener("focusout", function(e){
-    // כשעוזבים שדה – משחררים
     var t = e && e.target;
     if(!t) return;
     var tag = (t.tagName||"").toLowerCase();
@@ -622,16 +626,11 @@
     return (p.kids && p.kids.length) || (p.dishes && p.dishes.length) || (p.logs && p.logs.length);
   }
 
-  // טוען מהענן בלי reload (מונע לופים)
   function syncLoad(force){
-    if(__userTyping && !force){
-      // לא מפריעים בזמן בחירה/כתיבה
-      return;
-    }
+    if(__userTyping && !force) return;
     if(syncLoadedOnce && !force) return;
     syncLoadedOnce = true;
 
-    // Yanir: אם יש כבר נתונים מקומיים, לא מושכים אוטומטית (כדי לא לדרוס)
     if(!force && DEVICE_NAME === "Yanir" && hasLocalAnyData()){
       setSyncMsg("מקומי ("+DEVICE_NAME+")");
       renderSyncLastLine();
@@ -669,7 +668,6 @@
     return doFetchJSON(url);
   }
 
-  // Yanir מנצח: אם בענן יש עדכון חדש של Yanir, מכשיר שאינו Yanir לא ידרוס – ימשוך במקום.
   function syncSave(){
     try{
       if(syncTimer) clearTimeout(syncTimer);
@@ -684,7 +682,6 @@
             if(DEVICE_NAME !== "Yanir" &&
                (remoteMeta.updatedAt||0) > (localMeta.updatedAt||0) &&
                String(remoteMeta.updatedBy||"") === "Yanir"){
-              // במקום לדרוס, משוך (אבל לא בזמן כתיבה)
               if(__userTyping){
                 setSyncMsg("יש עדכון חדש של Yanir — משיכה תתבצע כשתסיימי לבחור ✅");
                 return;
@@ -714,14 +711,13 @@
     }
   }
 
-  // כפתור "משוך עכשיו"
   function syncPullNow(){
     syncLoadedOnce = false;
     syncLoad(true);
   }
   window.syncPullNow = syncPullNow;
 
-  // ===== גיבוי / שחזור =====
+  // ===== גיבוי / שחזור (אנדרואיד) =====
   function backupNow(){
     try{
       var backup = {
@@ -733,13 +729,20 @@
       };
       var blob = new Blob([JSON.stringify(backup, null, 2)], { type:"application/json" });
       var url = URL.createObjectURL(blob);
+
       var a = document.createElement("a");
       a.href = url;
       a.download = "kids-meals-backup-" + (new Date().toISOString().slice(0,10)) + ".json";
+      a.rel = "noopener";
       document.body.appendChild(a);
       a.click();
       a.remove();
-      URL.revokeObjectURL(url);
+
+      // נותנים רגע למערכת “לתפוס” את ההורדה לפני revoke (עוזר באנדרואיד מסוימים)
+      setTimeout(function(){
+        try{ URL.revokeObjectURL(url); }catch(e){}
+      }, 1500);
+
       setSyncMsg("גיבוי נוצר ✅");
     } catch(e){
       alert("גיבוי נכשל");
@@ -750,7 +753,11 @@
   function triggerRestore(){
     if(!confirm("טעינת גיבוי תחליף את הנתונים במכשיר הזה. להמשיך?")) return;
     var inp = document.getElementById("restoreFile");
-    if(inp) inp.click();
+    if(!inp) return;
+
+    // קריטי: כדי שה-file picker ייפתח גם אם בוחרים אותו קובץ שוב
+    inp.value = "";
+    inp.click();
   }
   window.triggerRestore = triggerRestore;
 
@@ -758,6 +765,7 @@
     try{
       var f = ev && ev.target && ev.target.files && ev.target.files[0];
       if(!f) return;
+
       var reader = new FileReader();
       reader.onload = function(){
         try{
@@ -776,14 +784,15 @@
 
           renderAll();
           setSyncMsg("גיבוי נטען ✅");
-          // אופציונלי: אחרי טעינה, נשלח לענן לפי כללי המכשיר
-          syncSave();
+          syncSave(); // יעלה לענן לפי כללי המכשיר
         } catch(e){
           alert("קובץ גיבוי לא תקין");
         }
       };
       reader.readAsText(f);
-      ev.target.value = ""; // כדי לאפשר טעינה מחדש של אותו קובץ אם צריך
+
+      // מאפשר לבחור שוב אותו קובץ
+      ev.target.value = "";
     } catch(e){
       alert("טעינת גיבוי נכשלה");
     }
@@ -1390,7 +1399,6 @@
   }
   window.resetAll = resetAll;
 
-  // ===== “Did you know?” =====
   function countDishUsageAllTime(){
     var counts = {};
     logs.forEach(function(r){
@@ -1734,7 +1742,6 @@
   }
   window.saveEditedReport = saveEditedReport;
 
-  // ===== Init + Render all =====
   function renderAll(){
     renderKids();
     renderDishes();
