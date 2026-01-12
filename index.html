@@ -32,6 +32,7 @@
       background:var(--card); border:1px solid var(--border);
       border-radius:var(--radius); box-shadow:var(--shadow);
       padding:14px; margin-bottom:14px;
+      overflow:hidden; /* חשוב: מונע גלישה מוזרה באייפון */
     }
     .tabs{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
     .tabbtn{
@@ -42,13 +43,17 @@
     .view{display:none}
     .view.active{display:block}
 
-    .field{margin-top:10px}
+    .field{margin-top:10px; min-width:0;}
     label{font-weight:900}
     input,select,textarea{
       width:100%; padding:10px 12px; font-size:16px;
       border-radius:12px; border:1px solid var(--border);
       background:#fff;
+      max-width:100%;
     }
+    /* תיקון ספציפי ל-input date באייפון שמדי פעם "נמתח" */
+    input[type="date"]{max-width:100%; width:100%;}
+
     textarea{min-height:140px; resize:vertical}
 
     .inline{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
@@ -307,17 +312,36 @@
       <button class="btn primary" type="button" onclick="saveMeal()">שמירה</button>
     </div>
 
+    <!-- נשאר - אבל עכשיו גם יש כרטיס סנכרון בתחתית -->
     <div class="note" id="syncStatus"></div>
   </section>
 
   <section class="card">
-    <h2>💡 הידעת?</h2>
+    <h2>💡 הידעת שירלי? ❤️</h2>
 
     <h3>3 מנות שהוכנו הכי מעט (רק מנות שנוצרו לפני חודש+)</h3>
     <div id="statsLeast"></div>
 
     <h3>3 מנות שהכנתי הכי מזמן</h3>
     <div id="statsOldest"></div>
+  </section>
+
+  <!-- כרטיס סנכרון בתחתית הדף הראשי -->
+  <section class="card">
+    <h2>🔄 סנכרון</h2>
+    <div class="note" id="syncStatusLine"></div>
+    <div class="note" id="syncLastLine"></div>
+
+    <div class="inline" style="margin-top:10px;">
+      <button class="btn ghost" type="button" onclick="syncPullNow()">משוך נתונים עכשיו</button>
+      <button class="btn ghost" type="button" onclick="backupNow()">גיבוי נתונים</button>
+      <button class="btn ghost" type="button" onclick="triggerRestore()">טעינת גיבוי</button>
+    </div>
+
+    <input id="restoreFile" type="file" accept="application/json" style="display:none" onchange="restoreFromFile(event)">
+
+    <!-- הערה רק במכשיר שלך (Yanir) -->
+    <div class="note" id="syncLocalNote" style="display:none; margin-top:10px;"></div>
   </section>
 </section>
 
@@ -476,7 +500,7 @@
 </div>
 
 <script>
-  // ===== iOS: מונעים תקלות SW ישן =====
+  // ===== iOS: מונעים תקלות SW ישן (כמו שהיה אצלכם) =====
   var __isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
   if (__isIOS && navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
     try {
@@ -489,6 +513,7 @@
   // ===== Sync Config =====
   var SYNC_URL = "https://script.google.com/macros/s/AKfycby8gDkzATtKwGFqFguvvTcqZ0jC1FCADAFWw1PLoOzVAmV1UwuZiIPkC1YNhmD_4pi4/exec";
   var SYNC_TOKEN = "CHANGE_ME_12345"; // תחליפו בהמשך לסיסמה אמיתית
+
   var DEVICE_NAME = (function(){
     var saved = localStorage.getItem("deviceName");
     if(saved) return saved;
@@ -498,12 +523,62 @@
   })();
 
   var META_KEY = "cloudMeta";
+  var LAST_SYNC_AT_KEY = "lastSyncAt";
   var syncTimer = null;
   var syncLoadedOnce = false;
 
+  // מונע "איפוס מסך" בזמן שהמשתמש באמצע לבחור/להקליד
+  var __userTyping = false;
+  document.addEventListener("focusin", function(e){
+    var t = e && e.target;
+    if(!t) return;
+    var tag = (t.tagName||"").toLowerCase();
+    if(tag === "input" || tag === "select" || tag === "textarea") __userTyping = true;
+  });
+  document.addEventListener("focusout", function(e){
+    // כשעוזבים שדה – משחררים
+    var t = e && e.target;
+    if(!t) return;
+    var tag = (t.tagName||"").toLowerCase();
+    if(tag === "input" || tag === "select" || tag === "textarea") __userTyping = false;
+  });
+
+  function pad2(n){ return String(n).padStart(2,"0"); }
+  function fmtDateTime(ms){
+    if(!ms) return "";
+    var d = new Date(ms);
+    return d.getFullYear() + "-" + pad2(d.getMonth()+1) + "-" + pad2(d.getDate()) + " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+  }
+
+  function setLastSyncNow(){
+    var now = Date.now();
+    localStorage.setItem(LAST_SYNC_AT_KEY, String(now));
+    renderSyncLastLine();
+  }
+
+  function renderSyncLastLine(){
+    var el = document.getElementById("syncLastLine");
+    if(!el) return;
+    var v = Number(localStorage.getItem(LAST_SYNC_AT_KEY) || "0");
+    el.textContent = v ? ("סונכרן לאחרונה: " + fmtDateTime(v)) : "סונכרן לאחרונה: —";
+  }
+
   function setSyncMsg(msg){
-    var el = document.getElementById("syncStatus");
-    if(el) el.textContent = msg || "";
+    var el1 = document.getElementById("syncStatus");
+    if(el1) el1.textContent = msg || "";
+    var el2 = document.getElementById("syncStatusLine");
+    if(el2) el2.textContent = msg || "";
+  }
+
+  function showLocalNoteIfYanir(){
+    var el = document.getElementById("syncLocalNote");
+    if(!el) return;
+    if(DEVICE_NAME === "Yanir"){
+      el.style.display = "block";
+      el.textContent = "הערה (רק אצלך): אם אתה לא רואה עדכונים – לחץ 'משוך נתונים עכשיו' או רענן פעם אחת.";
+    } else {
+      el.style.display = "none";
+    }
   }
 
   function safeJSONParse(s, fallback){
@@ -535,25 +610,32 @@
     localStorage.setItem("logs", JSON.stringify(remote.logs || []));
     setLocalMeta(meta || { updatedAt:0, updatedBy:"" });
 
-    // חשוב: גם בזיכרון של הדף
     kids = (remote.kids || []);
     dishes = normalizeDishes(remote.dishes || []);
     logs = (remote.logs || []);
+
     renderAll();
   }
 
-  // טוען מהענן בלי reload (מונע לופים באייפון)
+  function hasLocalAnyData(){
+    var p = localPayload();
+    return (p.kids && p.kids.length) || (p.dishes && p.dishes.length) || (p.logs && p.logs.length);
+  }
+
+  // טוען מהענן בלי reload (מונע לופים)
   function syncLoad(force){
+    if(__userTyping && !force){
+      // לא מפריעים בזמן בחירה/כתיבה
+      return;
+    }
     if(syncLoadedOnce && !force) return;
     syncLoadedOnce = true;
 
     // Yanir: אם יש כבר נתונים מקומיים, לא מושכים אוטומטית (כדי לא לדרוס)
-    if(!force && DEVICE_NAME === "Yanir"){
-      var p = localPayload();
-      if((p.kids && p.kids.length) || (p.dishes && p.dishes.length) || (p.logs && p.logs.length)){
-        setSyncMsg("מקומי ("+DEVICE_NAME+")");
-        return;
-      }
+    if(!force && DEVICE_NAME === "Yanir" && hasLocalAnyData()){
+      setSyncMsg("מקומי ("+DEVICE_NAME+")");
+      renderSyncLastLine();
+      return;
     }
 
     setSyncMsg("טוען מהענן...");
@@ -562,15 +644,18 @@
         if(!j || !j.ok) throw new Error("bad");
         if(!j.data){
           setSyncMsg("אין נתונים בענן");
+          renderSyncLastLine();
           return;
         }
         var remote = safeJSONParse(j.data, null);
         if(!remote) throw new Error("bad json");
         applyRemote(remote, j.meta);
         setSyncMsg("נטען מהענן ✅");
+        setLastSyncNow();
       })
       .catch(function(){
         setSyncMsg("טעינה מהענן נכשלה ❌");
+        renderSyncLastLine();
       });
   }
 
@@ -599,6 +684,11 @@
             if(DEVICE_NAME !== "Yanir" &&
                (remoteMeta.updatedAt||0) > (localMeta.updatedAt||0) &&
                String(remoteMeta.updatedBy||"") === "Yanir"){
+              // במקום לדרוס, משוך (אבל לא בזמן כתיבה)
+              if(__userTyping){
+                setSyncMsg("יש עדכון חדש של Yanir — משיכה תתבצע כשתסיימי לבחור ✅");
+                return;
+              }
               setSyncMsg("יש עדכון חדש של Yanir — מושך...");
               syncLoadedOnce = false;
               syncLoad(true);
@@ -609,6 +699,7 @@
               if(w && w.ok){
                 setLocalMeta(w.meta || remoteMeta);
                 setSyncMsg("סונכרן ✅");
+                setLastSyncNow();
               } else {
                 setSyncMsg("סנכרון נכשל ❌");
               }
@@ -622,6 +713,82 @@
       setSyncMsg("סנכרון נכשל ❌");
     }
   }
+
+  // כפתור "משוך עכשיו"
+  function syncPullNow(){
+    syncLoadedOnce = false;
+    syncLoad(true);
+  }
+  window.syncPullNow = syncPullNow;
+
+  // ===== גיבוי / שחזור =====
+  function backupNow(){
+    try{
+      var backup = {
+        v: 1,
+        exportedAt: Date.now(),
+        deviceName: DEVICE_NAME,
+        meta: getLocalMeta(),
+        payload: localPayload()
+      };
+      var blob = new Blob([JSON.stringify(backup, null, 2)], { type:"application/json" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "kids-meals-backup-" + (new Date().toISOString().slice(0,10)) + ".json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setSyncMsg("גיבוי נוצר ✅");
+    } catch(e){
+      alert("גיבוי נכשל");
+    }
+  }
+  window.backupNow = backupNow;
+
+  function triggerRestore(){
+    if(!confirm("טעינת גיבוי תחליף את הנתונים במכשיר הזה. להמשיך?")) return;
+    var inp = document.getElementById("restoreFile");
+    if(inp) inp.click();
+  }
+  window.triggerRestore = triggerRestore;
+
+  function restoreFromFile(ev){
+    try{
+      var f = ev && ev.target && ev.target.files && ev.target.files[0];
+      if(!f) return;
+      var reader = new FileReader();
+      reader.onload = function(){
+        try{
+          var obj = safeJSONParse(reader.result, null);
+          if(!obj || !obj.payload) throw new Error("bad");
+
+          var p = obj.payload || {};
+          localStorage.setItem("kids", JSON.stringify(p.kids || []));
+          localStorage.setItem("dishes", JSON.stringify(p.dishes || []));
+          localStorage.setItem("logs", JSON.stringify(p.logs || []));
+          if(obj.meta) setLocalMeta(obj.meta);
+
+          kids = (p.kids || []);
+          dishes = normalizeDishes(p.dishes || []);
+          logs = (p.logs || []);
+
+          renderAll();
+          setSyncMsg("גיבוי נטען ✅");
+          // אופציונלי: אחרי טעינה, נשלח לענן לפי כללי המכשיר
+          syncSave();
+        } catch(e){
+          alert("קובץ גיבוי לא תקין");
+        }
+      };
+      reader.readAsText(f);
+      ev.target.value = ""; // כדי לאפשר טעינה מחדש של אותו קובץ אם צריך
+    } catch(e){
+      alert("טעינת גיבוי נכשלה");
+    }
+  }
+  window.restoreFromFile = restoreFromFile;
 
   // ===== App data =====
   var KIDS_KEY = "kids";
@@ -1256,13 +1423,6 @@
     });
     return last;
   }
-  function fmtDate(ms){
-    var d = new Date(ms);
-    var yyyy=d.getFullYear();
-    var mm=String(d.getMonth()+1).padStart(2,"0");
-    var dd=String(d.getDate()).padStart(2,"0");
-    return yyyy+"-"+mm+"-"+dd;
-  }
   function renderDidYouKnow(){
     var counts = countDishUsageAllTime();
     var last = lastUsedByDish();
@@ -1301,7 +1461,7 @@
       lastEntries.forEach(function(x){
         var row2 = document.createElement("div");
         row2.className = "kv";
-        row2.innerHTML = "<b>"+escapeHtml(x.dish)+"</b><span>"+fmtDate(x.t)+"</span>";
+        row2.innerHTML = "<b>"+escapeHtml(x.dish)+"</b><span>"+fmtDateTime(x.t)+"</span>";
         statsOldest.appendChild(row2);
       });
     }
@@ -1460,7 +1620,6 @@
     });
     if(current && available.indexOf(current)>=0) sel.value = current;
 
-    // same kids checks
     var host = document.getElementById("editKidsChecks");
     host.innerHTML = "";
     kids.forEach(function(k){
@@ -1470,7 +1629,6 @@
       host.appendChild(row);
     });
 
-    // split rows: checkbox + select
     var shost = document.getElementById("editSplitKids");
     shost.innerHTML = "";
     kids.forEach(function(k){
@@ -1583,6 +1741,8 @@
     renderLogSelectors();
     toggleMode();
     renderData();
+    renderSyncLastLine();
+    showLocalNoteIfYanir();
   }
 
   document.getElementById("dateInput").value = todayISO();
