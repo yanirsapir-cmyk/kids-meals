@@ -1,4 +1,4 @@
-const CACHE = "kids-meals-cache-v4";
+const CACHE = "kids-meals-cache-v5";
 
 const CORE = [
   "./",
@@ -6,19 +6,24 @@ const CORE = [
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png",
+  "./sw.js",
 ];
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(CORE)));
+  event.waitUntil(
+    (async () => {
+      const cache = await caches.open(CACHE);
+      await cache.addAll(CORE);
+    })()
+  );
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
-      // מוחקים קאש ישן כדי לא “להיתקע” על גרסאות קודמות
       const keys = await caches.keys();
-      await Promise.all(keys.map((k) => (k !== CACHE ? caches.delete(k) : null)));
+      await Promise.all(keys.map((k) => (k !== CACHE ? caches.delete(k) : Promise.resolve())));
       await self.clients.claim();
     })()
   );
@@ -31,23 +36,24 @@ self.addEventListener("fetch", (event) => {
   // רק אותו דומיין
   if (url.origin !== self.location.origin) return;
 
-  // לא נוגעים בבקשות ל-Google Script (סנכרון) / API וכו׳
-  // (זה גם בדומיין אחר אז גם ככה לא ייכנס, אבל נשאיר בטוח)
-  if (url.pathname.includes("/macros/")) return;
-
-  // תמיד נביא index.html מהרשת (כדי לקבל קוד עדכני), ואם אין רשת – מהקאש
-  if (url.pathname === "/" || url.pathname.endsWith("/index.html")) {
+  // תמיד Network-first לניווט (דף ראשי) כדי לקבל גרסאות חדשות
+  // (כולל Android/Safari כשזה "navigate")
+  if (req.mode === "navigate") {
     event.respondWith(networkFirst("./index.html"));
     return;
   }
 
-  // לשאר קבצי הליבה (אייקונים/מניפסט) – cache-first
+  // לטובת בטיחות: לא "מתערבים" בבקשות עם querystring (למשל אם תוסיף בעתיד)
+  // אבל אם תרצה כן - אפשר להוריד את התנאי הזה.
+  // כאן נשאיר את זה cache-first גם אם יש query (רק אם זה אותו דומיין)
+  // event.respondWith(cacheFirst(req));
+
+  // קבצי ליבה: cache-first
   event.respondWith(cacheFirst(req));
 });
 
 async function networkFirst(cacheKey) {
   try {
-    // no-store כדי לא להיתקע על cache של הדפדפן עצמו
     const fresh = await fetch(cacheKey, { cache: "no-store" });
     const cache = await caches.open(CACHE);
     cache.put(cacheKey, fresh.clone());
@@ -55,7 +61,6 @@ async function networkFirst(cacheKey) {
   } catch (e) {
     const cached = await caches.match(cacheKey);
     if (cached) return cached;
-    // fallback אחרון
     return new Response("Offline", { status: 503, statusText: "Offline" });
   }
 }
